@@ -980,6 +980,11 @@ svg text{font-variant-numeric:lining-nums!important}
 .ih:has(.ithumb) .in,.ih:has(.iicon) .in{flex:1;min-width:0}
 .iicon{width:40px;height:40px;flex:none;background-color:var(--gold);-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
 .iicon.zoom{cursor:zoom-in}.iicon:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* Bladesong uses in the header: spent boxes get a light fill and a dark X so they read on the pink box (Omer, v43.81) */
+body.bladesong .hpips .pip{border-color:#fff8ec}
+body.bladesong .hpips .pip.spent{background:#fff8ec!important;opacity:1}
+body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after{background:#8e1a47;width:110%;height:2px}
 </style>
 
 <header class="top">
@@ -1008,7 +1013,7 @@ svg text{font-variant-numeric:lining-nums!important}
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.80</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.81</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
