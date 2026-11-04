@@ -987,6 +987,8 @@ svg text{font-variant-numeric:lining-nums!important}
 body.bladesong .hpips .pip{border-color:#fff8ec}
 body.bladesong .hpips .pip.spent{background:#fff8ec!important;opacity:1}
 body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after{background:#8e1a47;width:110%;height:2px}
+
+.ih .noatt{white-space:nowrap}
 </style>
 
 <header class="top">
@@ -1015,7 +1017,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.82</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.83</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2992,7 +2994,7 @@ function renderGear(){
    <div class="card span2">
      <div class="card-h"><h2>Magic items</h2><div class="row"><span class="small ${n>3?"no":"muted"}">Attuned ${n}/3</span><button class="btn pri sm" id="addItem">+ Add item</button></div></div>
      ${ITEMS.map(it=>`<div class="item"><div class="ih">${itemIcon(it)}<span class="in">${esc(it.n)}</span>
-       ${it.att?`<button class="attbtn ${S.attuned[it.id]?"on":""}" data-att="${it.id}" aria-pressed="${!!S.attuned[it.id]}">${S.attuned[it.id]?"◆ Attuned":"◇ Attune"}</button>`:`<span class="small muted">No attunement needed</span>`}</div>
+       ${it.att?`<button class="attbtn ${S.attuned[it.id]?"on":""}" data-att="${it.id}" aria-pressed="${!!S.attuned[it.id]}">${S.attuned[it.id]?"◆ Attuned":"◇ Attune"}</button>`:`<span class="small muted noatt">No attunement</span>`}</div>
        <div class="small">${esc(it.x)}</div>
        ${(it.fx||[]).length?`<div class="small fxline">${it.fx.map(f=>`${sgn(f.v)} ${FX[f.k]}`).join(" · ")}${it.att&&!S.attuned[it.id]?" (when attuned)":""}</div>`:""}
        ${it.charges?`<div class="row"><span class="label">Charges</span><div class="pips">${Array.from({length:it.charges},(_,i)=>i).map(i=>`<button class="pip sq ${i<(S.charges[it.id]??it.charges)?"":"spent"}" data-ch="${it.id}" data-i="${i}" aria-label="charge ${i+1}"></button>`).join("")}</div>${it.custom?`<span class="small muted">${it.rw&&it.rw!=="none"?`Regains ${esc(it.ra||"all")} on ${it.rw==="short"?"a Short or Long Rest":it.rw==="dawn"?"dawn (Long Rest)":"a Long Rest"}`:""}</span>`:`<button class="btn sm" data-dawn="${it.id}">Dawn: +1d4</button>`}</div>`:""}
