@@ -730,7 +730,13 @@ svg.dval{width:44px;height:44px}svg.dval text{font:700 30px var(--f-title);fill:
 .atkdmg.miss{opacity:.28;filter:grayscale(1)}.atkdmg.miss .rbig{text-decoration:line-through}
 .atkdmg.lit .rbig{color:#ffe9b0;text-shadow:0 0 16px rgba(255,205,110,.55)}
 .nextwrap{display:flex;flex-direction:column;gap:4px}
-.ordsw{align-self:flex-start;margin:0 0 2px}
+.ordwrap{position:relative}
+.ordwrap>.opt{width:100%}
+.ordwrap.on>.opt{padding-right:78px}
+.ordsw{position:absolute;top:12px;right:10px;width:58px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);font:inherit;cursor:pointer;padding:0}
+.ordsw .ordic{font-size:1.7rem;line-height:1}
+.ordsw small{font-size:.7rem;letter-spacing:.04em;color:var(--muted)}
+.ordsw:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .opt.nextatk{border-width:2px;border-color:var(--src);box-shadow:0 0 14px -3px var(--src);animation:nextpulse 1.6s ease-in-out infinite}
 @keyframes nextpulse{50%{box-shadow:0 0 22px -2px var(--src)}}
 .nextskip{align-self:flex-end}
@@ -1018,7 +1024,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.88</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.89</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2438,6 +2444,7 @@ function renderTurn(){
   const t=S.turn, first=S.round===1, song=S.song.on, as=atkStat();
   const rb=as+C.prof+1, rd=rapD();
   const cf=!!S.cantFirst, R1=`Rapier ${sgn(rb)} · ${rd}`;
+  const swapBtn=id=>`<button type="button" class="ordsw" id="${id}" aria-label="Swap attack order: now ${cf?"cantrip":"Rapier"} first" title="Swap order"><span class="ordic" aria-hidden="true">⇅</span><small>Swap</small></button>`;
   const steps=(n,dmg,use)=>`<span class="steps"><span class="st ${cf?"st2":""}"><em>1</em>${cf?n:R1}</span><span class="st ${cf?"":"st2"}"><em>2</em>${cf?R1:n}</span></span><span class="stuse">${use}</span>`;
   const opt=(id,title,sub,dis,src="",note="")=>{ const ch=choiceOf(id); if(ch){ dis=false; sub="✓ Chosen · tap again to undo"; note=""; } if(!note&&OPTNOTE[id]&&!ch) note=OPTNOTE[id]; return `<button class="opt src-${src} ${dis?"dis":""} ${ch?"chosen":""}" id="${id}" ${dis?'aria-disabled="true"':""} data-tip="${esc(tipTxt(id))}"><b>${title}${["oBB","oGFB","oHR","rOA"].includes(id)?" "+rollCue("attack"):""}</b><span>${sub}</span>${note?`<em class="cnote ${id==="oBB"?"plan":""}">${note}</em>`:""}</button>`; };
   const hasL=min=>SL().some(l=>l>=min&&slotsLeft(l)>0);
@@ -2484,9 +2491,8 @@ function renderTurn(){
        <div class="tcol"><div class="label">Action</div>
          ${S.conc&&S.conc.name==="Haste"||!prepN("Haste")?"":opt("oHaste","Haste on yourself",hasL(3)?"Start here · 3rd slot · Concentration · AC +2, Speed ×2, extra action":"No 3rd+ slots left",t.a||!hasL(3),"haste")}
          ${t.combo&&COMBO_N[t.combo]?`<div class="nextwrap"><button class="opt src-${t.combo} nextatk" id="oNext"><b>2/2 · ${COMBO_N[t.combo]} ${rollCue("attack")}</b><span>Rapier ${sgn(rb)} · +2d8 ${t.combo==="bb"?"thunder":"fire"} · tap to cast</span></button><button class="btn sm nextskip" id="oNextSkip">Skip</button></div>`:""}
-         ${t.a?"":`<button type="button" class="btn sm ordsw" id="oOrder" aria-label="Swap attack order">Order: ${cf?"cantrip first":"Rapier first"} ⇄</button>`}
-         ${opt("oBB",cf?"Booming Blade → Rapier":"Rapier → Booming Blade",steps("Booming Blade","+2d8 thunder","Single target · boss fight"),t.a,"bb")}
-         ${opt("oGFB",cf?"Green-Flame Blade → Rapier":"Rapier → Green-Flame Blade",steps("Green-Flame Blade","+2d8 fire, then leaps","Several targets · enemy unlikely to move"),t.a,"gfb")}
+         <div class="ordwrap ${t.a?"":"on"}">${opt("oBB",cf?"Booming Blade → Rapier":"Rapier → Booming Blade",steps("Booming Blade","+2d8 thunder","Single target · boss fight"),t.a,"bb")}${t.a?"":swapBtn("oOrdBB")}</div>
+         <div class="ordwrap ${t.a?"":"on"}">${opt("oGFB",cf?"Green-Flame Blade → Rapier":"Rapier → Green-Flame Blade",steps("Green-Flame Blade","+2d8 fire, then leaps","Several targets · enemy unlikely to move"),t.a,"gfb")}${t.a?"":swapBtn("oOrdGFB")}</div>
          ${rider}
          ${opt("oSpellA","Cast a spell","Magic action · prepared spells below ↓",t.a)}
          ${opt("oAlt","Other action",S.haste?"Disengage · Dodge · Dagger":"Dash · Disengage · Dodge · Dagger",t.a)}
@@ -2556,7 +2562,7 @@ function wireTurn(){
   on("oGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("a"); const r=await bladeCombo("Green-Flame Blade","2d8","piercing + fire"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
   on("oNext",async()=>{ const k=S.turn.combo; if(!COMBO[k]) return; const [n,ty]=COMBO[k]; S.turn.combo=null; S.rider=k; S.riderEvi=null; if(k==="bb") S.bbTarget=""; persist(); render();
     const a=await attack("2/2 "+n,rb0(),rapD()+"+2d8",ty); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
-  on("oOrder",()=>{ S.cantFirst=!S.cantFirst; persist(); render(); });
+  ["oOrdBB","oOrdGFB"].forEach(id=>on(id,()=>{ S.cantFirst=!S.cantFirst; persist(); render(); }));
   on("oNextSkip",()=>{ S.turn.combo=null; persist(); render(); toastMsg("Second attack skipped"); });
   on("oSpellA",()=>{ const el=document.querySelector(".spsec.act"); if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200); } });
   on("oAlt",()=>{ const dag=as+C.prof, dd=`1d4+${as}`;
