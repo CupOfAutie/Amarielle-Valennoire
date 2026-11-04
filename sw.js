@@ -1,5 +1,5 @@
 /* Amari app service worker. CACHE is stamped by build.sh with the site version + content hash. */
-const CACHE = "amari-v43.31-d513004591";
+const CACHE = "amari-v43.32-0af72a8ca8";
 const CORE = ["./", "./index.html", "./pwa.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-192.png", "./icons/maskable-512.png",
   "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
