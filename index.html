@@ -628,6 +628,49 @@ button.eco.used{text-decoration:line-through}
 .opt.chosen>span{color:var(--good)}
 .opt .cnote{display:block;align-self:stretch;font-style:normal;font-size:.8rem;line-height:1.35;color:var(--muted);text-align:left;margin-top:4px;padding-top:4px;border-top:1px dashed rgba(255,255,255,.08)}
 .opt .cnote.plan{color:var(--gold,#d9b46a)}
+/* "I roll" window (v43.33) */
+.sheet.rw{text-align:left;max-height:calc(100dvh - 24px);overflow:auto;padding-top:10px}
+.sheet.rw input[type=number]::-webkit-inner-spin-button,.sheet.rw input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.sheet.rw input[type=number]{-moz-appearance:textfield}
+.rw-ban{border-radius:10px;padding:6px 12px;margin:6px 0;font-weight:700;letter-spacing:.06em;text-align:center}
+.rw-ban small{display:block;font-weight:400;letter-spacing:0;opacity:.88;margin-top:2px}
+.rw-ban.adv{background:#1f5a3a;color:#d8ffe6;border:1px solid #4fd18b}
+.rw-ban.dis{background:#6a1f22;color:#ffe0e0;border:1px solid #ff7b7b}
+.rw-ban.mix{background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.rw-fr{display:flex;justify-content:center;align-items:flex-start;gap:12px;margin:6px 0}
+.rw-dp{display:flex;flex-direction:column;align-items:center}
+.rw-f{font-size:2.2rem;line-height:1.05;font-weight:700;color:#e7c77a;font-family:var(--f-title),Georgia,serif;white-space:nowrap}
+.rw-dies{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:4px;max-width:240px}
+.rw-dg{display:flex;flex-direction:column;align-items:center;font-size:.72rem;gap:1px}
+svg.die{width:40px;height:40px}
+svg.die .df{fill:currentColor;fill-opacity:.18;stroke:currentColor;stroke-width:4;stroke-linejoin:round}
+svg.die .dl{fill:none;stroke:currentColor;stroke-width:2.5}
+svg.die text{fill:currentColor;font:700 18px Georgia,serif}
+.rw-parts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 8px}
+.rw-parts span{border:1px solid rgba(231,199,122,.45);border-radius:999px;padding:2px 9px;font-size:.82rem}
+.rw-parts span.aur{border-color:#f0d27a;background:rgba(240,210,122,.12)}
+.rw-aura{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 6px;flex-wrap:wrap}
+.rw-aura button{border-radius:999px;padding:6px 12px;font-size:.9rem;border:1px solid #f0d27a;background:rgba(240,210,122,.18);color:#ffe9b0;cursor:pointer}
+.rw-aura button.off{background:transparent;opacity:.75;border-style:dashed}
+.rw-ask{font-size:.95rem;text-align:center;margin:6px 0 4px}
+.rw-in{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rw-in .bigin{width:120px;margin:0}
+.rw-app{border:1px dashed #b7a2ff;color:#d9ceff;border-radius:10px;padding:6px 10px;text-align:center;font-size:.8rem}
+.rw-app b{display:block;font-size:1.5rem}
+.rw-x{display:block;margin:4px auto 0;background:none;border:1px solid rgba(217,206,255,.5);color:#d9ceff;border-radius:999px;font-size:.72rem;padding:2px 8px;cursor:pointer}
+.rw-nat{display:flex;gap:6px}.rw-nat button{border:1px solid var(--line);background:none;color:inherit;border-radius:999px;padding:6px 10px;cursor:pointer}
+.rw-nat button.on{background:#e7c77a;color:#2a1a0a;border-color:#e7c77a}
+.rw-tot{margin:8px 0;text-align:center;border:2px solid #e7c77a;border-radius:14px;padding:6px;background:rgba(231,199,122,.12);animation:rwpop .35s ease-out}
+.rw-tot .t{font-size:3rem;font-weight:700;color:#ffe9b0;font-family:var(--f-title),Georgia,serif;line-height:1}
+.rw-tot small{display:block;opacity:.9}.rw-tot .ok{color:#7fe0a0}.rw-tot .no{color:#ff9b9b}
+.rw-tot.n20{border-color:#5fe39a}.rw-tot.n20 .t{color:#a8ffcb}.rw-tot.n1{border-color:#ff7b7b}.rw-tot.n1 .t{color:#ffb3b3}
+@keyframes rwpop{from{transform:scale(.92);opacity:.4}to{transform:none;opacity:1}}
+.rw-hm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}.rw-hm .btn{font-size:1.05rem;padding:12px}
+.btn.rw-hit{background:#2f7a4d;color:#fff;border-color:#4fd18b}.btn.rw-miss{background:#7a2f33;color:#fff;border-color:#ff7b7b}
+.rw-mode{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:8px}
+.rw-mode button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:3px 10px;font-size:.8rem;cursor:pointer}
+.rw-mode button[aria-pressed="true"]{color:#2a1a0a;background:#e7c77a;border-color:#e7c77a}
+.shake{animation:rwshake .3s}@keyframes rwshake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.undoctl{margin:2px 0 6px}.undoctl .btn{font-size:.8rem;opacity:.9;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .concjump{display:inline-flex;align-items:center;gap:6px;margin:0;padding:3px 10px;border-radius:999px;border:1.5px solid var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent);color:var(--gold);font:inherit;font-size:.86rem;cursor:pointer}
 .concjump b{color:var(--ink);font-weight:600}
 .condjump{padding:3px 10px!important;font-size:.8rem!important}
@@ -738,7 +781,7 @@ nav.tabs button[aria-selected="true"]{color:var(--gold);background:var(--accent-
   <div class="top-inner">
     <div class="idrow">
       <div class="name"><span class="avwrap"><img class="avatar" src="data:image/webp;base64,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" alt=""><img class="avatar av-song" src="data:image/webp;base64,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" alt=""></span>Amari Valennoire <small>High Elf · Bladesinger Wizard <span id="lvlTxt">11</span></small></div>
-      <div class="row topright"><span class="sync" title="Page version">v43.32 ·</span><span class="sync" id="sync">Saved on this device</span><button class="btn sm" id="hShort">Short rest</button><button class="btn sm" id="hLong">Long rest</button></div>
+      <div class="row topright"><span class="sync" title="Page version">v43.33 ·</span><span class="sync" id="sync">Saved on this device</span><button class="btn sm" id="hShort">Short rest</button><button class="btn sm" id="hLong">Long rest</button></div>
     </div>
     <div class="vitals" id="vitals"></div>
     <nav class="tabs" role="tablist" id="tabs">
@@ -884,7 +927,9 @@ const TIPS={
  oAlt:"Dash (extra movement equal to your Speed), Disengage (your movement doesn't provoke opportunity attacks), Dodge, or attack with a dagger or unarmed strike. Your prepared combat spells are listed below.",
  rOA:"When an enemy you can see leaves your reach, make one Rapier attack. Uses your Reaction.",
  oSpell:"Cast any 1-action spell. Opens the Spells tab.",
- oHR:"Haste action: one weapon attack only. A cantrip like Booming Blade can't be used here.",
+ oHR:"Haste action: one weapon attack. DM ruling (2026-11-04): you may cast Booming Blade or Green-Flame Blade with it instead, so two cantrips per turn.",
+ oHBB:"Haste action, DM ruling (2026-11-04): Booming Blade instead of the single Haste attack. Rapier hit deals {RD} piercing + 2d8 thunder; if the target willingly moves 5 ft or more before your next turn it takes 3d8 thunder.",
+ oHGFB:"Haste action, DM ruling (2026-11-04): Green-Flame Blade instead of the single Haste attack. Rapier hit deals {RD} piercing + 2d8 fire, then fire leaps to a second creature within 5 ft of the target.",
  oHD:"Haste action: Dash adds your Speed again; Disengage stops opportunity attacks for the rest of the turn.",
  rShield:"Reaction when you're hit by an attack or targeted by Magic Missile. +5 AC until the start of your next turn, including against the triggering attack. 1st-level slot.",
  rShieldOff:"+5 AC until the start of your next turn. It ends when you tap My turn starts.",
@@ -1055,7 +1100,7 @@ const hasC=n=>!!(S.conds||{})[n] || (n==="Unconscious"&&S.hp===0);
 const exh=()=>+((S.conds||{}).Exhaustion||0);
 const incap=()=>INCAP.find(hasC)||"";
 /* ally boosts (spec from the combat-strategy thread, Hebrew labels) */
-const BOOSTS={aura:{n:"Nivero's Aura",x:"+4 to all saving throws, Concentration included"},bless:{n:"Bless",x:"+1d4 to attack rolls and saving throws"},sof:{n:"Shield of Faith",x:"+2 AC"}};
+const BOOSTS={aura:{n:"Aura of Protection",x:"+4 to all saving throws, Concentration included"},bless:{n:"Bless",x:"+1d4 to attack rolls and saving throws"},sof:{n:"Shield of Faith",x:"+2 AC"}};
 const hasB=k=>!!(S.boosts&&S.boosts[k]);
 /* custom effects: Omer defines a name + what it changes; applied to rolls, AC and speed while on */
 const CFX_W={atk:"Attack rolls",save:"All saving throws",STR:"STR saves",DEX:"DEX saves",CON:"CON saves (incl. Concentration)",INT:"INT saves",WIS:"WIS saves",CHA:"CHA saves",check:"Ability checks & skills",ac:"AC",speed:"Speed (ft)"};
@@ -1176,7 +1221,7 @@ function exhMenu(){
 }
 
 /* ================= COMBAT LOG ================= */
-function ev(o){ if(!S.round) return; if(!S.cur) S.cur={id:Date.now().toString(36),start:Date.now(),init:S.init,hp0:S.hp,maxHp:C.maxHp,ev:[]}; o.t=Date.now(); o.r=S.round; o.ph=S.phase; S.cur.ev.push(o); if(S.cur.ev.length>500) S.cur.ev.shift(); }
+function ev(o){ if(!S.round) return; if(!noEv) markUndo(o.label||o.k); if(!S.cur) S.cur={id:Date.now().toString(36),start:Date.now(),init:S.init,hp0:S.hp,maxHp:C.maxHp,ev:[]}; o.t=Date.now(); o.r=S.round; o.ph=S.phase; S.cur.ev.push(o); if(S.cur.ev.length>500) S.cur.ev.shift(); }
 function fightStats(rec){ const E=rec.ev, atk=E.filter(e=>e.k==="atk");
   return { rounds:rec.rounds||Math.max(1,...E.map(e=>e.r||1)), attacks:atk.length, hits:atk.filter(e=>e.hit===true).length, misses:atk.filter(e=>e.hit===false).length,
     unmarked:atk.filter(e=>e.hit==null).length, crits:atk.filter(e=>e.nat===20).length, ones:atk.filter(e=>e.nat===1).length,
@@ -1218,7 +1263,7 @@ function evLine(e,i,live){ const nc=e.nat===20?"nat20":e.nat===1?"nat1":"";
   return `<div class="le"><span class="small muted">${esc(e.label)}</span></div>`; }
 function turnLog(){ if(!S.round) return ""; if(!S.cur) S.cur={id:Date.now().toString(36),start:Date.now(),init:S.init,hp0:S.hp,maxHp:C.maxHp,ev:[]}; const t0=S.turnT||0;
   const L=S.cur.ev.map((e,i)=>[e,i]).filter(([e])=>e.t>=t0&&e.k!=="turn");
-  return `<div class="tlog"><span class="lh">This round · until your next turn</span>${L.length?L.map(([e,i])=>(e.ph==="theirs"&&i>0&&S.cur.ev[i-1].ph!=="theirs"?`<span class="lh" style="margin-top:4px">After your turn</span>`:"")+evLine(e,i,true)).join(""):`<span class="small muted">Your rolls and hits show here until the turn ends.</span>`}</div>`; }
+  return `<div class="tlog">${undoCtl()}<span class="lh">This round · until your next turn</span>${L.length?L.map(([e,i])=>(e.ph==="theirs"&&i>0&&S.cur.ev[i-1].ph!=="theirs"?`<span class="lh" style="margin-top:4px">After your turn</span>`:"")+evLine(e,i,true)).join(""):`<span class="small muted">Your rolls and hits show here until the turn ends.</span>`}</div>`; }
 function fmtT(t){ const d=new Date(t); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" "+d.toTimeString().slice(0,5); }
 function fightMD(rec){ const st=fightStats(rec); const L=[];
   L.push(`## Fight · ${fmtT(rec.start)}`,"",`- Rounds: ${st.rounds} · Initiative: ${rec.init??"?"} · HP ${rec.hp0} → ${rec.hp1} of ${rec.maxHp}${st.down?" · **dropped to 0 HP**":""}`,
@@ -1291,10 +1336,52 @@ function d20(bonus, auto=0, mOverride=null){
   if(m>0){k=Math.max(a,b); note=`adv ${a}/${b}`} else if(m<0){k=Math.min(a,b); note=`dis ${a}/${b}`}
   return {nat:k, total:k+bonus, note, adv:m>0, dis:m<0};
 }
+/* ===== Undo the last logged action (v43.33, Omer 2026-11-04) =====
+   A snapshot of S is taken at the start of every tap (capture phase, before the button's own handler runs).
+   When that tap leads to logged entries (ev / logRoll), the snapshot goes on a small undo stack.
+   Only the newest action can be undone (repeatable), always behind a confirm with Keep as the default. */
+const UNDO_LS=LSKEY+"-undo"; let undoStack=[]; try{ undoStack=JSON.parse(localStorage.getItem(UNDO_LS)||"[]")||[]; }catch(e){ undoStack=[]; }
+let lgSnap=null, lgSnapId=0, undoBusy=false;
+const saveUndo=()=>{ try{ localStorage.setItem(UNDO_LS,JSON.stringify(undoStack)); }catch(e){ undoStack=undoStack.slice(-3); try{ localStorage.setItem(UNDO_LS,JSON.stringify(undoStack)); }catch(_){} } };
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("button,.opt,[data-tsp],input[type=checkbox]"); if(!t||undoBusy) return;
+  if(t.closest("#ask,#result,.undoctl,.tabs,nav")) return;
+  try{ lgSnap=JSON.stringify(S); lgSnapId++; }catch(_){} },true);
+function markUndo(label){ if(undoBusy||!lgSnap) return; const top=undoStack[undoStack.length-1];
+  if(top&&top.id===lgSnapId&&top.sid===SESSION_ID){ if(top.labels.length<6&&!top.labels.includes(label)) top.labels.push(label); }
+  else { undoStack.push({id:lgSnapId,sid:SESSION_ID,snap:lgSnap,labels:[label],t:Date.now()}); if(undoStack.length>6) undoStack.shift(); }
+  saveUndo(); }
+const SESSION_ID=Math.random().toString(36).slice(2);
+function undoCtl(){ const top=undoStack[undoStack.length-1]; if(!top) return "";
+  return `<div class="undoctl"><button class="btn sm" id="bUndoLast" type="button">↶ Undo last: ${esc(top.labels[0])}${top.labels.length>1?` (+${top.labels.length-1})`:""}</button></div>`; }
+function undoDiff(before){ const out=[], B=before;
+  if(B.hp!==S.hp) out.push(`HP ${S.hp} → ${B.hp}`);
+  if(JSON.stringify(B.slots)!==JSON.stringify(S.slots)) out.push("spell slots");
+  if(JSON.stringify(B.song)!==JSON.stringify(S.song)) out.push("Bladesong");
+  if(!!B.haste!==!!S.haste) out.push(B.haste?"Haste back on":"Haste off");
+  if(JSON.stringify(B.conc)!==JSON.stringify(S.conc)) out.push(B.conc?`Concentration back on ${B.conc.name}`:"Concentration removed");
+  if(JSON.stringify(B.conds||{})!==JSON.stringify(S.conds||{})) out.push("conditions");
+  if(JSON.stringify(B.boosts||{})!==JSON.stringify(S.boosts||{})) out.push("ally boosts");
+  if(JSON.stringify(B.charges)!==JSON.stringify(S.charges)) out.push("Mind Sharpener charges");
+  if(!!B.reaction!==!!S.reaction) out.push(B.reaction?"Reaction used":"Reaction available again");
+  if(JSON.stringify(B.turn)!==JSON.stringify(S.turn)) out.push("this turn's actions");
+  if((B.shield||false)!==(S.shield||false)) out.push("Shield");
+  return out; }
+function undoLast(){ const top=undoStack[undoStack.length-1]; if(!top) return; let before; try{ before=JSON.parse(top.snap); }catch(e){ undoStack.pop(); saveUndo(); render(); return; }
+  const ch=undoDiff(before); document.getElementById("result").innerHTML="";
+  openModal(`<h3>Undo this?</h3><p><b>${top.labels.map(esc).join("<br>")}</b></p>
+   <p class="small">It leaves the log${ch.length?`, and this goes back: ${ch.map(esc).join(" · ")}`:""}. Anything you changed after it is undone too.</p>
+   <div class="row"><button class="btn pri" data-close="1">Keep</button><button class="btn bad-solid" id="bUndoGo">Undo it</button></div>`);
+  document.getElementById("bUndoGo").onclick=()=>{ undoBusy=true;
+    const keep={physical:S.physical,physMode:S.physMode,practiceWiped:S.practiceWiped,lessons:S.lessons,combats:S.combats,spellText:S.spellText,customSpells:S.customSpells,customItems:S.customItems,prepared:S.prepared};
+    S=Object.assign(DEFAULT(),before); Object.keys(keep).forEach(k=>{ if(keep[k]!==undefined) S[k]=keep[k]; });
+    undoStack.pop(); saveUndo(); lgSnap=null; persist(); closeModal(); render(); if(typeof renderChecks==="function"&&tab==="checks") renderChecks();
+    document.getElementById("result").innerHTML=""; undoBusy=false; toastMsg(`Undone: ${top.labels[0]}`); };
+}
+document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("#bUndoLast")) undoLast(); });
 let burst=[], burstT=0, keepBurst=false;
 let noEv=false, pendEvi=null;
 function logRoll(label, total, detail, cls="", sub=null, tl="", noPanel=false){
-  rolledSinceSnap=true;
+  rolledSinceSnap=true; markUndo(label);
   S.log.unshift({label,total,detail,cls,t:Date.now()}); S.log=S.log.slice(0,30);
   if(!noEv) ev({k:"roll",label,n:total,detail,cls,tl}); noEv=false; persist();
   if(!noPanel){
@@ -1406,38 +1493,148 @@ function askDie(html){ return new Promise((res,rej)=>{ const el=document.getElem
   el.querySelector("[data-app]").onclick=()=>done(null);
   const sk=el.querySelector("[data-skip]"); if(sk) sk.onclick=()=>done("skip");
 });}
-async function rollD20(label,bonus,auto=0){
+/* ===== "I roll" window (v43.33, Omer 2026-11-04): formula + dice drawings, bonus breakdown, app-rolled dice, live total, Hit/Miss in the same window ===== */
+const DIEPATH={
+ 4:'<polygon points="50,6 94,90 6,90" class="df"/><path d="M50,6 50,62 M6,90 50,62 94,90" class="dl"/>',
+ 6:'<rect x="10" y="10" width="80" height="80" rx="10" class="df"/>',
+ 8:'<polygon points="50,4 90,50 50,96 10,50" class="df"/><path d="M10,50 90,50 M50,4 30,50 50,96 M50,4 70,50 50,96" class="dl"/>',
+ 10:'<polygon points="50,4 92,44 50,96 8,44" class="df"/><path d="M8,44 30,52 50,40 70,52 92,44 M50,4 50,40 M30,52 50,96 70,52" class="dl"/>',
+ 12:'<polygon points="50,4 94,36 77,92 23,92 6,36" class="df"/><polygon points="50,24 72,40 64,68 36,68 28,40" class="dl"/>',
+ 20:'<polygon points="50,4 92,28 92,72 50,96 8,72 8,28" class="df"/><polygon points="50,24 76,66 24,66" class="dl"/><path d="M50,4 50,24 M92,28 76,66 M8,28 24,66 M50,96 76,66 M50,96 24,66 M92,72 76,66 M8,72 24,66 M8,28 50,24 92,28" class="dl"/>'};
+function dieSvg(f,col){ const sh=DIEPATH[f]||DIEPATH[6]; const ty=f===4?72:f===8?44:f===20?58:f===10?36:56;
+  return `<svg class="die" viewBox="0 0 100 100" style="color:${col}" aria-hidden="true">${sh}<text x="50" y="${ty}" text-anchor="middle">${f}</text></svg>`; }
+const DIECOL={gold:"#e7c77a",adv:"#5fe39a",dis:"#ff7b7b",bb:"#8fb8ff",gfb:"#7fe0a0"};
+function rollParts(label,bonus,ctx){ const L=label.toLowerCase(), P=[];
+  if(ctx&&ctx.parts) return ctx.parts;
+  if(/attack/.test(L)){
+    if(bonus===C.spellAtk){ P.push([`INT`,INT],["proficiency",C.prof]); }
+    else { const a=atkStat(); P.push([S.song.on&&a===INT?"INT (Bladesong)":"DEX",a],["proficiency",C.prof]); }
+  } else if(/^concentration/.test(L)){ P.push(["CON",CON]); if(S.song.on) P.push(["INT (Bladesong)",INT]); }
+  else if(/save/.test(L)){ const a=(/^(str|dex|con|int|wis|cha)/.exec(L)||[])[1]; if(a){ const A=a.toUpperCase(); P.push([A,mod(C.abil[A])]); if(C.saveProf.includes(A)) P.push(["proficiency",C.prof]); if(C.saveBonus) P.push(["item",C.saveBonus]); } }
+  else { const sk=C.skills.find(x=>x[0].toLowerCase()===L); const a=sk?sk[1]:(/^(str|dex|con|int|wis|cha)/.exec(L)||[])[1]; if(a){ const A=a.toUpperCase(); P.push([A,mod(C.abil[A])]); if(sk&&sk[2]) P.push([sk[2]===2?"expertise":"proficiency",C.prof*sk[2]]); } }
+  const sum=P.reduce((x,p)=>x+p[1],0), rest=bonus-sum; if(rest) P.push([/rapier/i.test(label)?"rapier":"other",rest]);
+  if(!P.length&&bonus) P.push(["bonus",bonus]);
+  return P; }
+async function rollD20(label,bonus,auto=0,ctx={}){
   const cr=condRoll(label);
   if(cr.fail) return {nat:1,total:0,note:`auto-fail: ${cr.fail}`,autofail:1};
-  bonus-=cr.pen; bonus+=cr.bon||0;
-  (cr.dice||[]).forEach(d=>{ const v=rollDie(d.e); bonus+=v; cr.bonWhy=[cr.bonWhy,`+${v} ${d.n} (${d.e})`].filter(Boolean).join(" · "); });
-  if(cr.bless){ const d4=1+Math.floor(Math.random()*4); bonus+=d4; cr.bonWhy=[cr.bonWhy,`+${d4} ${BOOSTS.bless.n} (d4)`].filter(Boolean).join(" · "); }
   const A=auto>0||S.mode==="adv"||cr.adv.length>0, D=auto<0||S.mode==="dis"||cr.dis.length>0, mm=(A?1:0)-(D?1:0);
-  const why=[cr.adv.length?`adv: ${cr.adv.join(", ")}`:"",cr.dis.length?`dis: ${cr.dis.join(", ")}`:"",cr.pen?`−${cr.pen} Exhaustion`:"",cr.bonWhy||""].filter(Boolean).join(" · ");
-  const r=await rollD20raw(label,bonus,mm); if(why) r.note=[r.note,why].filter(Boolean).join(" · "); return r;
+  const L=label.toLowerCase(), isSave=/save/.test(L), isAtk=/attack/.test(L);
+  const auraOn=isSave&&hasB("aura"); if(auraOn) cr.bon-=4;
+  const fixed=[...rollParts(label,bonus,ctx)];
+  if(cr.pen) fixed.push(["Exhaustion",-cr.pen]);
+  (cr.bonWhy||"").split(" · ").filter(Boolean).filter(w=>!/Aura of Protection/.test(w)).forEach(w=>{ const m=/^([+-−]?\d+)\s+(.*)$/.exec(w); if(m) fixed.push([m[2],parseInt(m[1].replace("−","-"),10)]); });
+  const base=bonus-cr.pen+cr.bon;
+  const appDice=(cr.dice||[]).map(d=>({n:d.n,e:d.e,v:rollDie(d.e)}));
+  const bless=cr.bless?{v:1+Math.floor(Math.random()*4)}:null;
+  const advWhy=[...cr.adv, auto>0&&!cr.adv.length?"":""].filter(Boolean), disWhy=cr.dis;
+  const extrasAll=(aura,bl)=>(aura?4:0)+(bl&&bless?bless.v:0)+appDice.reduce((x,d)=>x+d.v,0);
+  const whyTxt=(aura,bl)=>[cr.adv.length?`adv: ${cr.adv.join(", ")}`:"",cr.dis.length?`dis: ${cr.dis.join(", ")}`:"",cr.pen?`−${cr.pen} Exhaustion`:"",
+    (cr.bonWhy||"").split(" · ").filter(w=>w&&!/Aura of Protection/.test(w)).join(" · "),aura?`+4 ${BOOSTS.aura.n}`:"",bl&&bless?`+${bless.v} ${BOOSTS.bless.n} (d4)`:"",...appDice.map(d=>`+${d.v} ${d.n} (${d.e})`)].filter(Boolean).join(" · ");
+  if(!S.physical){ const r=d20(base+extrasAll(auraOn,true),0,mm); const w=whyTxt(auraOn,true); if(w) r.note=[r.note,w].filter(Boolean).join(" · "); return r; }
+  const advW=[...cr.adv]; if(auto>0&&!advW.length) advW.push(ctx.why||(/^concentration/.test(L)?"War Caster":"feature")); const disW=[...cr.dis]; if(auto<0&&!disW.length) disW.push(ctx.why||"effect");
+  const r=await rollWindow({label,base,fixed,mm,advWhy:advW,disWhy:disW,auto,isSave,isAtk,auraOn,bless,appDice,dc:ctx.dc,extrasAll,whyTxt});
+  return r;
 }
-async function rollD20raw(label,bonus,mm){
+async function rollD20raw(label,bonus,mm){ /* kept for callers that bypass rollD20 */
   if(!S.physical) return d20(bonus,0,mm);
-  const m=mm;
-  const how = m>0?"Advantage: roll two d20 and enter the <b>higher</b>.":m<0?"Disadvantage: roll two d20 and enter the <b>lower</b>.":"Roll one d20.";
-  const v=await askDie(`<div class="label">${esc(label)}</div><h3>Your d20</h3><p class="small">${how} The app adds ${sgn(bonus)}.</p>
-    <input id="askIn" class="bigin num" type="number" inputmode="numeric" min="1" max="20" aria-label="d20 result">
-    <div class="row"><button class="btn pri" data-ok>Use my roll</button><button class="btn" data-app>Let the app roll</button></div>`);
-  if(v===null) return d20(bonus,0,mm);
-  const nat=Math.max(1,Math.min(20,v)); return {nat,total:nat+bonus,note:"your dice"};
+  return rollWindow({label,base:bonus,fixed:[["bonus",bonus]],mm,advWhy:[],disWhy:[],isSave:false,isAtk:false,auraOn:false,bless:null,appDice:[],extrasAll:()=>0,whyTxt:()=>""});
 }
+function rollWindow(o){ return new Promise((res,rej)=>{ const el=document.getElementById("ask");
+  let aura=o.auraOn, bl=!!o.bless, typed="", nat=null; S.physMode=S.physMode||"dice";
+  const fin=()=>S.physMode==="total";
+  const mod2=()=>o.base+(aura?4:0);
+  const calc=()=>{ const v=parseInt(typed,10); if(isNaN(v)) return null;
+    if(fin()) return {total:v, nat: nat||Math.max(2,Math.min(19,v-mod2())), die:null};
+    const n=Math.max(1,Math.min(20,v)); return {total:n+o.base+o.extrasAll(aura,bl), nat:n, die:n}; };
+  const totHtml=()=>{
+    const c=calc(); let tot="";
+    if(c){ const n20=c.nat===20&&(!fin()||nat===20), n1=c.nat===1&&(!fin()||nat===1);
+      const brk=fin()?"your total":[`${c.die} die`,`${sgn(o.base)}`,aura?"+4 aura":"",bl&&o.bless?`+${o.bless.v} Bless`:"",...o.appDice.map(d=>`+${d.v} ${d.n}`)].filter(Boolean).join(" · ");
+      const dc=o.dc?(c.total>=o.dc&&!n1?` · <b class="ok">vs DC ${o.dc}: saved</b>`:` · <b class="no">vs DC ${o.dc}: failed</b>`):"";
+      tot=`<div class="rw-tot ${n20?"n20":n1?"n1":""}"><span class="t">${c.total}</span><small>${n20?"<b>Natural 20!</b> ":n1?"<b>Natural 1.</b> ":""}${esc(brk)}${dc}. Tell the DM: ${c.total}</small></div>`; }
+    return tot; };
+  const draw=()=>{ const m=o.mm, col=m>0?DIECOL.adv:m<0?DIECOL.dis:DIECOL.gold;
+    const ban=m>0?`<div class="rw-ban adv">ADVANTAGE<small>Roll two d20 · type the HIGHER one${o.advWhy.length?" · "+esc(o.advWhy.join(", ")):""}</small></div>`:m<0?`<div class="rw-ban dis">DISADVANTAGE<small>Roll two d20 · type the LOWER one${o.disWhy.length?" · "+esc(o.disWhy.join(", ")):""}</small></div>`:(o.advWhy.length&&o.disWhy.length?`<div class="rw-ban mix">Advantage and Disadvantage cancel<small>Roll one d20</small></div>`:"");
+    const chips=[...o.fixed.filter(p=>p[1]),...(aura?[["Aura of Protection",4]]:[])].map(p=>`<span class="${p[0]==="Aura of Protection"?"aur":""}">${p[1]<0?"−":"+"}${Math.abs(p[1])} ${esc(p[0])}</span>`).join("");
+    const appBox=fin()?"":[bl&&o.bless?`<div class="rw-app">Bless d4<br>app rolled<b>+${o.bless.v}</b><button class="rw-x" data-rw="nobless" aria-label="Not blessed">✕ not blessed</button></div>`:"",...o.appDice.map(d=>`<div class="rw-app">${esc(d.n)} ${esc(d.e)}<br>app rolled<b>+${d.v}</b></div>`)].join("");
+    const tot=totHtml();
+    const btns=o.isAtk?`<div class="rw-hm"><button class="btn rw-hit" data-rw="hit">Hit → roll damage</button><button class="btn rw-miss" data-rw="miss">Miss</button></div><div class="row"><button class="btn sm" data-rw="app">Let the app roll</button></div>`
+      :`<div class="row"><button class="btn pri" data-rw="ok">Use my roll</button><button class="btn" data-rw="app">Let the app roll</button></div>`;
+    el.innerHTML=`<div class="scrim ask-scrim"><div class="sheet rw" role="dialog" aria-modal="true"><button class="askx" data-cancel aria-label="Cancel">✕</button>
+    <div class="label">${esc(o.label)}</div>${ban}
+    <div class="rw-fr"><div class="rw-dp"><div class="rw-f">d20</div><div class="rw-dies">${dieSvg(20,col)}${m?dieSvg(20,col):""}</div></div><div class="rw-f">${o.base+(aura?4:0)<0?"−":"+"} ${Math.abs(o.base+(aura?4:0))}</div></div>
+    ${chips?`<div class="rw-parts">${chips}</div>`:""}
+    ${o.isSave?`<div class="rw-aura"><button class="${aura?"":"off"}" data-rw="aura">${aura?"✓ ":""}Aura of Protection +4</button><span class="small muted">${aura?"tap to turn off":"in the paladin's aura? tap"}</span></div>`:""}
+    <p class="rw-ask">${fin()?`Type your <b>final total</b>. The app adds nothing.`:`Type <b>only the die</b>${m?` (the ${m>0?"higher":"lower"} one)`:""}. The app adds the rest.`}</p>
+    <div class="rw-in"><input id="askIn" class="bigin num" type="number" inputmode="numeric" ${fin()?"":'min="1" max="20"'} value="${esc(typed)}" aria-label="${fin()?"final total":"d20 result"}">${appBox}
+      ${fin()?`<div class="rw-nat"><button class="${nat===20?"on":""}" data-rw="n20">Nat 20</button><button class="${nat===1?"on":""}" data-rw="n1">Nat 1</button></div>`:""}</div>
+    <div id="rwTot">${tot}</div>
+    ${btns}
+    <div class="rw-mode"><span class="small muted">I type:</span><button aria-pressed="${!fin()}" data-rw="mdice">Die only</button><button aria-pressed="${fin()}" data-rw="mtotal">Final total</button></div>
+    </div></div>`;
+    wireCancel(el,rej);
+    const inp=el.querySelector("#askIn"); setTimeout(()=>{ inp.focus(); const L=inp.value.length; try{ inp.setSelectionRange(L,L); }catch(e){} },20);
+    inp.oninput=()=>{ typed=inp.value; const t=el.querySelector("#rwTot"); if(t) t.innerHTML=totHtml(); };
+    inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ const b=el.querySelector('[data-rw="ok"],[data-rw="hit"]'); if(b) b.click(); } });
+    el.querySelectorAll("[data-rw]").forEach(b=>b.onclick=()=>act(b.dataset.rw));
+  };
+  const done=(extra={})=>{ const c=calc(); if(!c){ const i=el.querySelector("#askIn"); if(i){ i.focus(); i.classList.add("shake"); setTimeout(()=>i.classList.remove("shake"),400);} return; }
+    el.innerHTML=""; const parts=fin()?[`your total ${c.total}`]:[]; const w=fin()?[o.advWhy.length?`adv: ${o.advWhy.join(", ")}`:"",o.disWhy.length?`dis: ${o.disWhy.join(", ")}`:""].filter(Boolean).join(" · "):o.whyTxt(aura,bl);
+    res(Object.assign({nat:c.nat,total:c.total,note:["your dice",fin()?"typed total":"",w].filter(Boolean).join(" · ")},extra)); };
+  const act=k=>{
+    if(k==="aura"){ aura=!aura; setBoost("aura",aura); draw(); return; }
+    if(k==="nobless"){ bl=false; setBoost("bless",false); draw(); return; }
+    if(k==="mdice"||k==="mtotal"){ S.physMode=k==="mtotal"?"total":"dice"; typed=""; nat=null; persist(); draw(); return; }
+    if(k==="n20"||k==="n1"){ const v=k==="n20"?20:1; nat=nat===v?null:v; draw(); return; }
+    if(k==="app"){ el.innerHTML=""; const r=d20(o.base+o.extrasAll(aura,bl),0,o.mm); const w=o.whyTxt(aura,bl); if(w) r.note=[r.note,w].filter(Boolean).join(" · "); res(r); return; }
+    if(k==="ok") return done();
+    if(k==="hit") return done({hit:true});
+    if(k==="miss") return done({hit:false});
+  };
+  draw();
+});}
 function splitExpr(expr){ let flat=0; const dice=[]; expr.replace(/\s/g,"").match(/[+-]?[^+-]+/g).forEach(t=>{ if(/d/.test(t)) dice.push(t.replace(/^\+/,"")); else flat+=+t; }); return {dice,flat}; }
 async function rollDmg(label,expr,crit=false,canSkip=false){
   if(!S.physical) return rollExpr(expr,crit);
   const {dice,flat}=splitExpr(expr);
   if(!dice.length) return {total:flat,detail:String(flat)};
-  const shown=dice.join(" + "); const critMax=crit?dice.reduce((a,d)=>{const m=d.match(/^(\d*)d(\d+)$/); return a+(+(m[1]||1))*(+m[2]);},0):0;
-  const v=await askDie(`<div class="label">${esc(label)}</div><h3>Roll ${shown}</h3><p class="small">Enter the total on the dice.${crit?` <b>Epic 20:</b> the app adds the dice maximum (+${critMax}).`:""}${flat?` The app adds ${sgn(flat)}.`:""}</p>
-    <input id="askIn" class="bigin num" type="number" inputmode="numeric" min="0" aria-label="dice total">
-    <div class="row"><button class="btn pri" data-ok>Use my roll</button><button class="btn" data-app>Let the app roll</button>${canSkip?`<button class="btn" data-skip>It missed</button>`:""}</div>`);
-  if(v==="skip") return null;
-  if(v===null) return rollExpr(expr,crit);
-  return {total:v+critMax+flat, detail:`your dice ${v}${critMax?` + ${critMax} max (epic 20)`:""}${flat?" "+sgn(flat):""}`};
+  const G=dice.map(d=>{ const m=d.match(/^(\d*)d(\d+)$/); return {n:+(m[1]||1),f:+m[2]}; });
+  const critMax=crit?G.reduce((a,g)=>a+g.n*g.f,0):0;
+  const cant=/booming/i.test(label)?["bb","Booming Blade"]:/green-flame/i.test(label)?["gfb","Green-Flame"]:null;
+  const gname=i=>cant&&G.length>1?(i===0?"weapon":cant[1]):"";
+  const gcol=i=>cant&&G.length>1&&i>0?DIECOL[cant[0]]:DIECOL.gold;
+  const same=G.every(g=>g.f===G[0].f), nTot=G.reduce((a,g)=>a+g.n,0);
+  const dtext=same?`${nTot}d${G[0].f}`:G.map(g=>`${g.n}d${g.f}`).join(" + ");
+  const icons=G.map((g,i)=>Array.from({length:Math.min(g.n,6)},()=>`<div class="rw-dg">${dieSvg(g.f,gcol(i))}${gname(i)?`<span>${gname(i)}</span>`:""}</div>`).join("")+(g.n>6?`<span class="small">×${g.n}</span>`:"")).join("");
+  const word=n=>["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n]||n;
+  return new Promise((res,rej)=>{ const el=document.getElementById("ask"); let typed="";
+    const fin=()=>S.physMode==="total";
+    const calc=()=>{ const v=parseInt(typed,10); if(isNaN(v)) return null; return fin()?{total:v,detail:`your total ${v}`}:{total:v+critMax+flat,detail:`your dice ${v}${critMax?` + ${critMax} max (epic 20)`:""}${flat?" "+sgn(flat):""}`}; };
+    const dTot=()=>{ const c=calc(); return c?`<div class="rw-tot"><span class="t">${c.total}</span><small>${esc(c.detail)}. Tell the DM: ${c.total}</small></div>`:""; };
+    const draw=()=>{
+      el.innerHTML=`<div class="scrim ask-scrim"><div class="sheet rw" role="dialog" aria-modal="true"><button class="askx" data-cancel aria-label="Cancel">✕</button>
+      <div class="label">${esc(label)}</div>
+      ${crit?`<div class="rw-ban adv">EPIC 20<small>The app adds the dice maximum (+${critMax}) on top of your roll</small></div>`:""}
+      <div class="rw-fr"><div class="rw-dp"><div class="rw-f">${dtext}</div><div class="rw-dies">${icons}</div></div>${flat?`<div class="rw-f">${flat<0?"−":"+"} ${Math.abs(flat)}</div>`:""}</div>
+      <p class="rw-ask">${fin()?`Type your <b>final damage</b>. The app adds nothing.`:`Roll <b>${same?word(nTot)+" d"+G[0].f:dtext}</b> and type <b>${nTot>1?"their sum":"the die"}</b>.${flat||critMax?` The app adds ${sgn(flat+critMax)}.`:""}`}</p>
+      <div class="rw-in"><input id="askIn" class="bigin num" type="number" inputmode="numeric" min="0" value="${esc(typed)}" aria-label="${fin()?"final damage":"dice total"}"></div>
+      <div id="rwTot">${dTot()}</div>
+      <div class="row"><button class="btn pri" data-rw="ok">Use my roll</button><button class="btn" data-rw="app">Let the app roll</button>${canSkip?`<button class="btn" data-rw="skip">It missed</button>`:""}</div>
+      <div class="rw-mode"><span class="small muted">I type:</span><button aria-pressed="${!fin()}" data-rw="mdice">Dice only</button><button aria-pressed="${fin()}" data-rw="mtotal">Final total</button></div>
+      </div></div>`;
+      wireCancel(el,rej);
+      const inp=el.querySelector("#askIn"); setTimeout(()=>{ inp.focus(); const L=inp.value.length; try{ inp.setSelectionRange(L,L);}catch(e){} },20);
+      inp.oninput=()=>{ typed=inp.value; el.querySelector("#rwTot").innerHTML=dTot(); };
+      inp.addEventListener("keydown",e=>{ if(e.key==="Enter") el.querySelector('[data-rw="ok"]').click(); });
+      el.querySelectorAll("[data-rw]").forEach(b=>b.onclick=()=>{ const k=b.dataset.rw;
+        if(k==="mdice"||k==="mtotal"){ S.physMode=k==="mtotal"?"total":"dice"; typed=""; persist(); draw(); return; }
+        if(k==="skip"){ el.innerHTML=""; res(null); return; }
+        if(k==="app"){ el.innerHTML=""; res(rollExpr(expr,crit)); return; }
+        const c=calc(); if(!c){ inp.focus(); return; } el.innerHTML=""; res(c); });
+    };
+    draw();
+  });
 }
 function rollCue(label,auto=0,short=false){ const cr=condRoll(label);
   if(cr.fail) return `<i class="rcue dis" title="Auto-fail: ${cr.fail}">FAIL${short?"":" · "+cr.fail}</i>`;
@@ -1575,7 +1772,7 @@ function concCheck(damage){
    <div class="row"><button class="btn pri" id="croll">Roll with advantage</button><button class="btn" data-close="1">Close</button></div>`);
   document.getElementById("croll").onclick=async()=>{
     const DC=+document.getElementById("cdc").value||10;
-    const r=await rollD20("Concentration save",m,1); r.add=[];
+    const r=await rollD20("Concentration save",m,1,{dc:DC}); r.add=[];
     logRoll("Concentration",r.total,`d20 ${r.nat} (${r.note}) ${sgn(m)} vs DC ${DC}`,r.total>=DC?"":"nat1",null,"",true);
     const res=document.getElementById("cres"); document.getElementById("croll").disabled=true;
     const show=()=>{ const pass=!r.autofail&&r.total>=DC;
@@ -1622,6 +1819,7 @@ async function askNext(i,n,prev,what="attack"){ return (await askChoice(`<div cl
 async function attack(name, bonus, dmgExpr, dmgType, auto=0, why="", quiet=false){
   const r=await rollD20(name+" attack",bonus,auto); if(why) r.note=[why,r.note].filter(Boolean).join(" · "); const crit=r.nat===20, miss1=r.nat===1;
   let hit = crit?true : miss1?false : null;
+  if(hit===null && typeof r.hit==="boolean") hit=r.hit;
   if(hit===null && (S.physical || S.askHit)) hit = (await askChoice(`<div class="label">${esc(name)}</div><h3>${r.total} to hit</h3><p class="small">d20 ${r.nat}${r.note?" ("+esc(r.note)+")":""} ${sgn(bonus)}. Did it hit?</p>`,[["hit","Hit → roll damage","pri"],["miss","Miss","bad"]]))==="hit";
   const d = hit===false ? null : await rollDmg(name+" damage",dmgExpr,crit,hit===null);
   if(hit===null && !d) hit=false;
@@ -1813,7 +2011,7 @@ function deathBox(){ return `<div class="row"><span class="label">Death saves</s
       <p class="small muted" style="margin:0">${S.death.s>=3?"<b style='color:var(--good)'>Stable.</b> You stay at 0 HP, unconscious, until healed.":S.death.f>=3?"<b style='color:var(--bad)'>Three failures: Amari dies.</b> <button class='btn sm good' id='bRevive'>Revived (Revivify) → 1 HP</button>":"d20, no bonus: <b>10+</b> success · <b>9 or less</b> failure · nat 1 = two failures · nat 20 = back up with 1 HP. Rolling at the table? Tap the boxes."}</p>`; }
 /* condition notes under the alternatives (main plan, DM 2026-11-04: Haste on Amari + Bladesong, then Booming Blade or Green-Flame Blade by context; hit and run or stay in Nivero's aura) */
 const OPTNOTE={
-  oBB:"Main plan: one target or a boss. Then either hit and run (use the Haste action to Disengage, so leaving draws no opportunity attack), or stay inside Nivero's aura.",
+  oBB:"Main plan: one target or a boss. With Haste, the Haste action can be a second Booming Blade (DM ruling). Then either hit and run (use the Haste action to Disengage, so leaving draws no opportunity attack), or stay inside Nivero's aura.",
   oGFB:"Two enemies standing next to each other",
   oAlt:"Can't attack this turn, need to keep Haste up, and no real reason to run far? Dodge.",
   oMisty:"Get out without an opportunity attack, or when they focus you",
@@ -1884,7 +2082,7 @@ function renderTurn(){
          ${opt("oSpellA","Cast a spell","Magic action · prepared spells below ↓",t.a)}
          ${opt("oAlt","Other action",S.haste?"Disengage · Dodge · Dagger":"Dash · Disengage · Dodge · Dagger",t.a)}
          ${S.conc&&S.conc.name==="Haste"?`<button class="opt src-haste active" id="oHasteOff" aria-label="Haste is on, tap to drop"><b>Haste ✦</b><span>${choiceOf("oHasteOff")?"✓ Just cast · tap again to undo":"Concentrating · tap to drop"}</span></button>`:""}</div>
-       ${S.haste?`<div class="tcol"><div class="label">Haste action</div>${opt("oHR","Rapier +1",`${sgn(rb)} · ${rd}`,t.h,"haste")}${opt("oHD","Dash or Disengage","",t.h,"haste")}</div>`:""}
+       ${S.haste?`<div class="tcol"><div class="label">Haste action</div>${opt("oHBB","Booming Blade",`${sgn(rb)} · Rapier + 2d8 thunder`,t.h,"bb")}${opt("oHGFB","Green-Flame Blade",`${sgn(rb)} · Rapier + 2d8 fire`,t.h,"gfb")}${opt("oHR","Rapier +1",`${sgn(rb)} · ${rd}`,t.h,"haste")}${opt("oHD","Dash or Disengage","",t.h,"haste")}</div>`:""}
      </div>${spSec("ba","Bonus action spells")}${spSec("a","Action spells · prepared")}${S.round&&!wait?`<button class="btn bad-solid endturn" id="tNext2">End my turn ■</button>`:""}</div>`;
   const R=S.reaction, anySlot=hasL(1);
   const lockR=!inc&&wait&&R;
@@ -1960,6 +2158,8 @@ function wireTurn(){
   on("rdGFB",()=>{ S.rider=null; persist(); render(); rollDmg("Green-Flame leap",`2d8+${INT}`).then(d=>logRoll("Green-Flame leap",d.total,d.detail+" fire","",null,"damage")); });
   on("rdX",()=>{ S.rider=null; persist(); render(); });
   on("oHR",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
+  on("oHBB",async()=>{ S.rider="bb"; S.bbTarget=""; spend("h"); const a=await attack("Booming Blade (Haste)",rb0(),rapD()+"+2d8","piercing + thunder"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
+  on("oHGFB",async()=>{ S.rider="gfb"; spend("h"); const a=await attack("Green-Flame Blade (Haste)",rb0(),rapD()+"+2d8","piercing + fire"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
   on("oHR1",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
   on("oHD",()=>{ openModal(`<h3>Haste action</h3><div class="row"><button class="btn pri" id="hdDash">Dash (+${speed()} ft)</button><button class="btn" id="hdDis">Disengage</button><button class="btn" data-close="1">Cancel</button></div>`);
     document.getElementById("hdDash").onclick=()=>{ closeModal(); S.turn.dash=(S.turn.dash||0)+1; spend("h"); };
@@ -2353,7 +2553,7 @@ function renderChecks(){
      <div class="statgrid"><div class="stat"><span class="label">Passive Perc.</span><b class="num">14</b></div><div class="stat"><span class="label" title="Passive Insight">Passive Ins.</span><b class="num">14</b></div><div class="stat"><span class="label" title="Passive Investigation">Passive Inv.</span><b class="num">23</b></div></div>
      <h2>Quick dice</h2>
      <div class="row">${[4,6,8,10,12,20,100].map(f=>`<button class="btn sm" data-qd="${f}">d${f}</button>`).join("")}</div>
-     <h2>Recent rolls</h2>
+     <h2>Recent rolls</h2>${undoCtl()}
      <div class="log">${S.log.length?S.log.map(l=>`<div><span>${esc(l.label)} <span class="muted small">${esc(l.detail)}</span></span><b class="num ${l.cls}">${l.total}</b></div>`).join(""):'<span class="muted small">Rolls you make show up here.</span>'}</div>
    </div>`;
   document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;persist();renderChecks();});
