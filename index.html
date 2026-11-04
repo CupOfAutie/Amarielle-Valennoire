@@ -960,6 +960,14 @@ svg text{font-variant-numeric:lining-nums!important}
 /* version label lives at the page bottom (Omer, v43.69) */
 @media (max-width:759px){.name small{white-space:normal;overflow:visible;line-height:1.2}}
 .verfoot{text-align:center;font-size:.7rem;color:var(--muted);opacity:.8;padding:18px 0 8px}
+
+/* spell to-dos after level up / unused prepared (Omer, v43.70) */
+.todos{display:flex;flex-direction:column;gap:8px}
+.todo{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;border:2px solid var(--gold);border-left-width:6px;border-radius:12px;padding:10px 12px;background:color-mix(in srgb,var(--gold) 14%,var(--surface))}
+.todo b{grid-column:1;font-size:1rem}.todo span{grid-column:1;font-size:.85rem;color:var(--muted)}.todo .btn{grid-column:2;grid-row:1/3}
+.todo.over{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+#tabs [data-tab="spells"].hasTodo{position:relative}
+#tabs [data-tab="spells"].hasTodo::after{content:"";position:absolute;top:6px;right:calc(50% - 30px);width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px var(--bg)}
 </style>
 
 <header class="top">
@@ -988,7 +996,7 @@ svg text{font-variant-numeric:lining-nums!important}
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.69</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.70</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2559,6 +2567,7 @@ function render(){
   hideTip(); try{ practicePurge(); }catch(e){} try{ fightsWipe1(); }catch(e){} applyChar(); if(S.mode&&S.mode!=="normal") S.mode="normal";
   document.body.classList.toggle("bladesong",S.song.on);
   renderHeader();
+  try{ const t=document.querySelector('#tabs [data-tab="spells"]'); const n=(S.char.newSpells||0)+((S.prepared||DEFAULT_PREP).length!==PREP_MAX?1:0); if(t){ t.classList.toggle("hasTodo",n>0); t.title=n>0?"Spells: something to choose":""; } }catch(e){}
   ({combat:renderCombat,spells:renderSpells,checks:renderChecks,gear:renderGear,notes:renderNotes,traits:renderTraits})[tab]();
 }
 function hpClass(){ const p=S.hp/C.maxHp; return p<=.25?"crit":p<=.5?"low":""; }
@@ -2878,7 +2887,11 @@ function renderSpells(){
       <div class="lvlhead"><h3>${l?ORD[l]+" level":"Cantrips"}</h3>
         ${l?`<div class="lvlslots"><div class="pips">${Array.from({length:C.slots[l]},(_,i)=>`<button class="pip slot ${i<left?"":"spent"}" data-sl="${l}" data-i="${i}" aria-label="${ORD[l]} slot ${i+1}"></button>`).join("")}</div></div>`:`<span class="small muted">At will</span>`}</div>
       ${none?`<p class="small muted" style="margin:6px 0 0">No ${ORD[l]}-level spells yet. You can use this slot to cast a lower-level spell at a higher level.</p>`:list.map(spellHtml).join("")}</section>`; };
-  document.getElementById("pane-spells").innerHTML=`
+  const nsp=S.char.newSpells||0, pfree=PREP_MAX-prepCount;
+  const todo=(nsp>0?`<div class="todo"><b>Wizard ${S.char.level}: add ${nsp} new spell${nsp>1?"s":""} to your spellbook</b><span>You leveled up. Each Wizard level adds 2 spells (1st level or higher) to your book.</span><button class="btn pri sm" data-todo="add">+ Add a spell</button></div>`:"")
+    +(pfree>0?`<div class="todo"><b>Prepared ${prepCount} of ${PREP_MAX}: you can prepare ${pfree} more</b><span>Open the Spellbook view and tick the spells you want ready.</span><button class="btn sm" data-todo="book">Open Spellbook</button></div>`:"")
+    +(pfree<0?`<div class="todo over"><b>Prepared ${prepCount} of ${PREP_MAX}: ${-pfree} too many</b><span>Untick ${-pfree} spell${-pfree>1?"s":""} in the Spellbook view.</span><button class="btn sm" data-todo="book">Open Spellbook</button></div>`:"");
+  document.getElementById("pane-spells").innerHTML=`${todo?`<div class="span2 todos">${todo}</div>`:""}
    <div class="card span2">
      <div class="spellbar">
        <div class="statmini"><span class="label"><span class="lf">Save DC</span><span class="ls">DC</span></span><b class="num">${C.spellDC}</b></div>
@@ -2888,7 +2901,7 @@ function renderSpells(){
        <button class="statmini memo ${S.memo?"ready":""}" id="memoBtn" data-tip="Memorize Spell (Wizard 5): when you finish a Short Rest, you can replace one prepared spell of 1st level or higher with another spell from your spellbook. It doesn't add new spells to the book."><span class="label">Memorize Spell</span><b>${S.memo?"Swap ready":"After Short Rest"}</b></button>
      </div>
      <div class="row spfilters"><div class="mode" role="group" aria-label="Which spells">
-         <button data-sv="prepared" aria-pressed="${spellView==="prepared"}">Prepared</button><button data-sv="book" aria-pressed="${spellView==="book"}">Spellbook</button></div><button class="btn pri sm" id="addSpell">+ Add a spell</button>${spellView==="book"?`<button class="btn sm" id="prepReset">Restore original prepared list</button>`:""}${S.char.newSpells>0?`<span class="pending">Level up: ${S.char.newSpells} new spell${S.char.newSpells>1?"s":""} to add</span>`:""}</div>
+         <button data-sv="prepared" aria-pressed="${spellView==="prepared"}">Prepared</button><button data-sv="book" aria-pressed="${spellView==="book"}">Spellbook</button></div><button class="btn pri sm" id="addSpell">+ Add a spell</button>${spellView==="book"?`<button class="btn sm" id="prepReset">Restore original prepared list</button>`:""}</div>
    </div>
    <div class="span2 lvlgrid">${[0,...SL()].map(levelBlock).join("")||'<p class="muted">No spells match this filter.</p>'}</div>
    <div class="card span2 spfoot">
@@ -2903,6 +2916,7 @@ function renderSpells(){
   document.querySelectorAll("[data-sv]").forEach(b=>b.onclick=()=>{ spellView=b.dataset.sv; renderSpells(); });
   document.getElementById("memoBtn").onclick=memoFlow;
   document.getElementById("addSpell").onclick=()=>spellForm(null);
+  document.querySelectorAll("[data-todo]").forEach(b=>b.onclick=()=>{ if(b.dataset.todo==="add") spellForm(null); else { const v=document.querySelector('[data-sv="book"]'); if(v) v.click(); } });
   document.getElementById("lgBtn").onclick=()=>document.getElementById("spLegend").classList.toggle("open");
   document.querySelectorAll("[data-sedit]").forEach(b=>b.onclick=()=>spellForm(SPELLS.find(x=>x.n===b.dataset.sedit)));
   document.querySelectorAll("[data-sdel]").forEach(b=>b.onclick=()=>removeSpell(b.dataset.sdel));
