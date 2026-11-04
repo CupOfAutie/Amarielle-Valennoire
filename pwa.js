@@ -40,6 +40,8 @@
       if (!confirm(`Replace everything on this device with the backup from ${when}?\n\nHP ${sheet.hp}. This can't be undone, so back up first if you're unsure.`)) return;
       sheet._ts = Date.now();
       localStorage.setItem(KEY, JSON.stringify(sheet));
+      /* the undo stack holds snapshots of the old state: drop it so Undo can't bring the replaced data back */
+      try { localStorage.removeItem(KEY + "-undo"); } catch(e) {}
       if (d.extras) Object.entries(d.extras).forEach(([k, v]) => { if (EXTRA.includes(k)) try { localStorage.setItem(k, v); } catch(e) {} });
       location.reload();
     };
