@@ -1018,7 +1018,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.87</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.88</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2138,6 +2138,8 @@ async function spellAttacks(sp,lvl){
 // the rider (BB move damage / GFB leap) only counts if the cantrip's attack hit
 function armRider(x){ const ex=typeof x==="number"?x:x&&typeof x.evi==="number"?x.evi:null; S.riderEvi = ex!=null&&S.cur ? ex : S.cur ? S.cur.ev.map(e=>e.k).lastIndexOf("atk") : null; if(S.riderEvi<0) S.riderEvi=null; persist(); render(); }
 function riderMissed(){ const e=S.riderEvi!=null&&S.cur&&S.cur.ev[S.riderEvi]; return !!(e&&e.hit===false); }
+/* Omer 2026-11-04: the Booming Blade "target moved" card and the Green-Flame leap unlock only after the cantrip attack is marked Hit */
+function riderHit(){ const e=S.riderEvi!=null&&S.cur&&S.cur.ev[S.riderEvi]; return !!(e&&e.hit===true); }
 function askChoice(html,btns){ return new Promise((res,rej)=>{ const el=document.getElementById("ask");
   el.innerHTML=`<div class="scrim ask-scrim"><div class="sheet" role="dialog" aria-modal="true"><button class="askx" data-cancel aria-label="Cancel">✕</button>${html}<div class="row">${btns.map(([k,t,c])=>`<button class="btn ${c||""}" data-ac="${k}">${t}</button>`).join("")}</div></div></div>`;
   wireCancel(el,rej); el.querySelectorAll("[data-ac]").forEach(b=>b.onclick=()=>{ el.innerHTML=""; res(b.dataset.ac); });
@@ -2452,9 +2454,9 @@ function renderTurn(){
     return `<div class="spsec ${k==="a"?"act":""}"><div class="label">${lbl}</div>${body}</div>`; };
   const bbDice=`${C.level<5?1:C.level<11?2:C.level<17?3:4}d8`;
   const bbT=S.bbTarget?` · ${esc(S.bbTarget)}`:"";
-  const bbCard = S.rider==="bb"&&!riderMissed()?`<div class="bbwrap"><button class="opt src-bb" id="rdBB" data-tip="Booming Blade: if the marked target willingly moves 5 ft or more before the start of your next turn, it takes the thunder damage and the spell ends. Free, no Reaction."><b>Booming Blade target moved${bbT}</b><span>Free · no Reaction · ${bbDice} thunder</span></button><input id="bbTarget" class="bbin" maxlength="24" placeholder="Which enemy? e.g. red orc" value="${esc(S.bbTarget||"")}" aria-label="Booming Blade target"></div>`
+  const bbCard = S.rider==="bb"&&riderHit()?`<div class="bbwrap"><button class="opt src-bb" id="rdBB" data-tip="Booming Blade: if the marked target willingly moves 5 ft or more before the start of your next turn, it takes the thunder damage and the spell ends. Free, no Reaction."><b>Booming Blade target moved${bbT}</b><span>Free · no Reaction · ${bbDice} thunder</span></button><input id="bbTarget" class="bbin" maxlength="24" placeholder="Which enemy? e.g. red orc" value="${esc(S.bbTarget||"")}" aria-label="Booming Blade target"></div>`
     : S.rider==="bbdone"?`<button class="opt src-bb dis" aria-disabled="true"><b>Booming Blade ✦ triggered${bbT}</b><span>Resets when your turn starts</span></button>`:"";
-  const rider = S.rider==="gfb"&&!riderMissed()?`<div class="rider src-gfb"><span class="small">Flame leaps to a second creature within 5 ft</span><button class="btn sm" id="rdGFB">Roll 2d8+${INT} fire</button><button class="btn sm" id="rdX" aria-label="Dismiss">✕</button></div>`:"";
+  const rider = S.rider==="gfb"&&riderHit()?`<div class="rider src-gfb"><span class="small">Flame leaps to a second creature within 5 ft</span><button class="btn sm" id="rdGFB">Roll 2d8+${INT} fire</button><button class="btn sm" id="rdX" aria-label="Dismiss">✕</button></div>`:"";
   // AC / speed ladder, precomputed like the paper sheet
   const cur=ac();
   const ladder=`<div class="acnow src-${acSrc()}"><div><span class="label">Armor Class</span><b class="num">${cur}</b></div>
@@ -2538,7 +2540,7 @@ function wireTurn(){
      <div class="row"><button class="btn" data-close="1">Cancel</button></div>`);
      document.querySelectorAll("[data-oasp]").forEach(b=>b.onclick=()=>{ closeModal(); castSpell(SPELLS.find(x=>x.n===b.dataset.oasp),()=>{S.reaction=true;}); });
      document.getElementById("rvRap").onclick=()=>{ closeModal(); S.reaction=true; persist(); render(); attack("Opportunity attack",rb,rd,"piercing"); };
-     document.getElementById("rvBB").onclick=()=>{ closeModal(); S.reaction=true; S.rider="bb"; S.bbTarget=""; persist(); render(); attack("Booming Blade (reaction)",rb,rd+"+2d8","piercing + thunder").then(armRider); };
+     document.getElementById("rvBB").onclick=()=>{ closeModal(); S.reaction=true; S.rider="bb"; S.riderEvi=null; S.bbTarget=""; persist(); render(); attack("Booming Blade (reaction)",rb,rd+"+2d8","piercing + thunder").then(armRider); };
  });
   on("rMS",()=>concCheck(0));
   on("oSong",()=>{ toggleSong(); if(S.song.on) spend("ba"); });
@@ -2550,9 +2552,9 @@ function wireTurn(){
   on("oVigor",()=>{ castSpell(SPELLS.find(s=>s.n==="Arcane Vigor"),()=>{S.turn.ba=true;}); });
   const as=atkStat(), rb=as+C.prof+1, rd=rapD();
   const COMBO={bb:["Booming Blade","piercing + thunder"],gfb:["Green-Flame Blade","piercing + fire"]};
-  on("oBB",async()=>{ S.rider="bb"; S.bbTarget=""; spend("a"); const r=await bladeCombo("Booming Blade","2d8","piercing + thunder"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
-  on("oGFB",async()=>{ S.rider="gfb"; spend("a"); const r=await bladeCombo("Green-Flame Blade","2d8","piercing + fire"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
-  on("oNext",async()=>{ const k=S.turn.combo; if(!COMBO[k]) return; const [n,ty]=COMBO[k]; S.turn.combo=null; S.rider=k; if(k==="bb") S.bbTarget=""; persist(); render();
+  on("oBB",async()=>{ S.rider="bb"; S.riderEvi=null; S.bbTarget=""; spend("a"); const r=await bladeCombo("Booming Blade","2d8","piercing + thunder"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
+  on("oGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("a"); const r=await bladeCombo("Green-Flame Blade","2d8","piercing + fire"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
+  on("oNext",async()=>{ const k=S.turn.combo; if(!COMBO[k]) return; const [n,ty]=COMBO[k]; S.turn.combo=null; S.rider=k; S.riderEvi=null; if(k==="bb") S.bbTarget=""; persist(); render();
     const a=await attack("2/2 "+n,rb0(),rapD()+"+2d8",ty); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
   on("oOrder",()=>{ S.cantFirst=!S.cantFirst; persist(); render(); });
   on("oNextSkip",()=>{ S.turn.combo=null; persist(); render(); toastMsg("Second attack skipped"); });
@@ -2577,8 +2579,8 @@ function wireTurn(){
   on("rdGFB",()=>{ S.rider=null; persist(); render(); rollDmg("Green-Flame leap",`2d8+${INT}`).then(d=>logRoll("Green-Flame leap",d.total,d.detail+" fire","",null,"damage")); });
   on("rdX",()=>{ S.rider=null; persist(); render(); });
   on("oHR",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
-  on("oHBB",async()=>{ S.rider="bb"; S.bbTarget=""; spend("h"); const a=await attack("Booming Blade (Haste)",rb0(),rapD()+"+2d8","piercing + thunder"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
-  on("oHGFB",async()=>{ S.rider="gfb"; spend("h"); const a=await attack("Green-Flame Blade (Haste)",rb0(),rapD()+"+2d8","piercing + fire"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
+  on("oHBB",async()=>{ S.rider="bb"; S.riderEvi=null; S.bbTarget=""; spend("h"); const a=await attack("Booming Blade (Haste)",rb0(),rapD()+"+2d8","piercing + thunder"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
+  on("oHGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("h"); const a=await attack("Green-Flame Blade (Haste)",rb0(),rapD()+"+2d8","piercing + fire"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
   on("oHR1",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
   on("oHD",()=>{ openModal(`<h3>Haste action</h3><div class="row"><button class="btn pri" id="hdDash">Dash (+${speed()} ft)</button><button class="btn" id="hdDis">Disengage</button><button class="btn" data-close="1">Cancel</button></div>`);
     document.getElementById("hdDash").onclick=()=>{ closeModal(); S.turn.dash=(S.turn.dash||0)+1; spend("h"); };
