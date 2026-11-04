@@ -309,7 +309,11 @@ details.spell summary .sn{flex:1;min-width:0;font-weight:500}
 .attslot{border:1.5px dashed var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
 .attslot.full{border-style:solid;border-color:var(--accent)}
 .attslot b{font-weight:700}
-.attname{display:flex;align-items:center;gap:10px;min-width:0}.attname .iicon{width:44px;height:44px}.attname b{min-width:0}
+.attslot:has(.attinfo){flex-direction:row;align-items:center;gap:12px}
+.attinfo{display:flex;flex-direction:column;gap:6px;align-items:flex-start;flex:1;min-width:0}
+.attpic{flex:none;width:104px;height:104px;border:1.5px solid var(--gold-dim);border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--gold) 6%,transparent)}
+.attpic.empty{border-style:dashed;border-color:var(--line);background:none}
+.attpic .iicon{width:84px;height:84px}
 .coins{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .coins label{display:flex;flex-direction:column;gap:2px;font-size:.72rem;letter-spacing:.08em;color:var(--muted);text-align:center}
 .coins input{width:100%;text-align:center;padding:5px 2px}
@@ -1004,7 +1008,7 @@ svg text{font-variant-numeric:lining-nums!important}
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.79</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.80</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2997,8 +3001,8 @@ function renderGear(){
      <p class="small muted" style="margin:0">Proficient with Disguise Kit. Languages: Common, Dwarvish, Elvish, Sylvan.</p></div>
    <div class="card span2"><div class="card-h"><h2>Attunement</h2><span class="small muted num">${n}/3 used · ${Math.max(0,3-n)} free</span></div>
      <div class="attslots">${[0,1,2].map(i=>{ const it=ITEMS.filter(x=>x.att&&S.attuned[x.id])[i];
-       return it?`<div class="attslot full"><span class="label">Slot ${i+1}</span><div class="attname">${itemIcon(it)}<b>${esc(it.n)}</b></div><button class="btn sm" data-unatt="${it.id}">End attunement</button></div>`
-                :`<div class="attslot"><span class="label">Slot ${i+1}</span><b class="muted">Empty</b><span class="small muted">Attune during a Short Rest</span></div>`; }).join("")}</div></div>`;
+       return it?`<div class="attslot full"><div class="attinfo"><span class="label">Slot ${i+1}</span><b>${esc(it.n)}</b><button class="btn sm" data-unatt="${it.id}">End attunement</button></div><div class="attpic">${itemIcon(it)}</div></div>`
+                :`<div class="attslot"><div class="attinfo"><span class="label">Slot ${i+1}</span><b class="muted">Empty</b><span class="small muted">Attune during a Short Rest</span></div><div class="attpic empty"></div></div>`; }).join("")}</div></div>`;
   document.querySelectorAll("[data-att]").forEach(b=>b.onclick=()=>{ const k=b.dataset.att;
     if(!S.attuned[k] && attunedCount()>=3){ toastMsg("All 3 attunement slots are full. End one first."); return; }
     S.attuned[k]=!S.attuned[k]; persist(); render(); });
