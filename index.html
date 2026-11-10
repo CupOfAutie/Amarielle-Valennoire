@@ -1034,7 +1034,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.93</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.94</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -1163,6 +1163,7 @@ const TIPS={
  oHasteOff:"Active: Speed ×2, +2 AC, Advantage on DEX saves, extra Haste action. If it ends you're Incapacitated with Speed 0 until the end of your next turn (Bladesong ends too). Tap to drop it.",
  oMisty:"Bonus Action, 2nd-level slot. Teleport up to 30 ft to an unoccupied space you can see. No opportunity attacks, since you don't move through spaces.",
  oVigor:"Bonus Action, 2nd-level slot. Spend up to 2 Hit Dice (d6), roll them, heal the total + 5. One more Hit Die per slot level above 2nd.",
+ oAtk:"Attack action with Extra Attack: two plain weapon attacks, {RD} piercing each on a hit. Needs no magic, so it works in antimagic.",
  oBB:"Attack action with Extra Attack: a normal Rapier attack and a Booming Blade attack, in the order you pick (Order button). Booming Blade: Rapier hit deals {RD} piercing + 2d8 thunder; if the target willingly moves 5 ft or more before your next turn it takes 3d8 thunder. ",
  oGFB:"Attack action with Extra Attack: a normal Rapier attack and a Green-Flame Blade attack, in the order you pick (Order button). Green-Flame Blade: Rapier hit deals {RD} piercing + 2d8 fire, then fire leaps to another creature you see within 5 ft for 2d8+{INT} fire.",
  oAlt:"Dash (extra movement equal to your Speed), Disengage (your movement doesn't provoke opportunity attacks), Dodge, or attack with a dagger or unarmed strike. Your prepared combat spells are listed below.",
@@ -2295,6 +2296,16 @@ async function bladeCombo(name,expr,type){
   return {evi:cf?a.evi:b.evi};
 }
 
+async function weaponPair(){
+  const L1="1/2 "+WN(), L2="2/2 "+WN();
+  const a=await attack(L1,rb0(),rapD(),"piercing",0,"",true);
+  const ent={label:L1+(a.crit?" · CRIT!":""),total:a.d?a.d.total:"–",detail:`d20 ${a.r.nat}${a.r.note?" ("+a.r.note+")":""} ${sgn(a.bonus)}`+(a.d?` · ${a.d.detail} piercing`:""),cls:a.d?(a.crit?"nat20":""):"muted",sub:{k:"to hit",v:a.r.total,cls:a.crit?"nat20":a.miss1?"nat1":""},tl:a.d?"damage":"no damage",evi:a.evi,dv:a.r,dmv:a.d};
+  const v=await comboSheet(a,L1,L2); if(a.evi==null) ent.hit=a.hit;
+  if(v==="stop"){ burst=[ent]; burstT=Date.now(); drawResult(); return; }
+  burst=[ent]; burstT=Date.now(); keepBurst=true;
+  await attack(L2,rb0(),rapD(),"piercing",0,"");
+}
+
 const UPCAST=["Absorb Elements","Charm Person","Chromatic Orb","Shadow Blade","Arcane Vigor","Hold Person","Invisibility","Scorching Ray","Vortex Warp","Dispel Magic","Fly","Thunder Step","Steel Wind Strike"];
 const scales=sp=>BASE_SPELLS.some(x=>x.n===sp.n)?UPCAST.includes(sp.n):/above|per slot|each slot|higher/i.test(sp.x||"");
 const ONE_SLOT_RULE=true; // DM confirmed 2026-11-02: one slotted spell on my own turn (reactions included); reactions on others' turns are free
@@ -2537,6 +2548,7 @@ function renderTurn(){
        <div class="tcol"><div class="label">Action</div>
          ${S.conc&&S.conc.name==="Haste"||!prepN("Haste")?"":opt("oHaste","Haste on yourself",AM?"Antimagic: no spells":hasL(3)?"Start here · 3rd slot · Concentration · AC +2, Speed ×2, extra action":"No 3rd+ slots left",t.a||!hasL(3)||AM,"haste")}
          ${t.combo&&COMBO_N[t.combo]?`<div class="nextwrap"><button class="opt src-${t.combo} nextatk" id="oNext"><b>2/2 · ${COMBO_N[t.combo]} ${rollCue("attack")}</b><span>${W} ${sgn(rb)} · +2d8 ${t.combo==="bb"?"thunder":"fire"} · tap to cast</span></button><button class="btn sm nextskip" id="oNextSkip">Skip</button></div>`:""}
+         ${opt("oAtk",`Attack · ${W} ×2`,`${sgn(rb)} · ${rd} each · Extra Attack`,t.a)}
          <div class="ordwrap ${t.a||AM?"":"on"}">${opt("oBB",cf?"Booming Blade → "+W:W+" → Booming Blade",steps("Booming Blade","+2d8 thunder",AM?"Antimagic: no cantrips":"Single target · boss fight"),t.a||AM,"bb")}${t.a||AM?"":swapBtn("oOrdBB")}</div>
          <div class="ordwrap ${t.a||AM?"":"on"}">${opt("oGFB",cf?"Green-Flame Blade → "+W:W+" → Green-Flame Blade",steps("Green-Flame Blade","+2d8 fire, then leaps",AM?"Antimagic: no cantrips":"Several targets · enemy unlikely to move"),t.a||AM,"gfb")}${t.a||AM?"":swapBtn("oOrdGFB")}</div>
          ${rider}
@@ -2607,6 +2619,7 @@ function wireTurn(){
   on("oVigor",()=>{ castSpell(SPELLS.find(s=>s.n==="Arcane Vigor"),()=>{S.turn.ba=true;}); });
   const as=atkStat(), rb=rb0(), rd=rapD();
   const COMBO={bb:["Booming Blade","piercing + thunder"],gfb:["Green-Flame Blade","piercing + fire"]};
+  on("oAtk",async()=>{ spend("a"); await weaponPair(); });
   on("oBB",async()=>{ S.rider="bb"; S.riderEvi=null; S.bbTarget=""; spend("a"); const r=await bladeCombo("Booming Blade","2d8","piercing + thunder"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
   on("oGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("a"); const r=await bladeCombo("Green-Flame Blade","2d8","piercing + fire"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
   on("oNext",async()=>{ const k=S.turn.combo; if(!COMBO[k]) return; const [n,ty]=COMBO[k]; S.turn.combo=null; S.rider=k; S.riderEvi=null; if(k==="bb") S.bbTarget=""; persist(); render();
