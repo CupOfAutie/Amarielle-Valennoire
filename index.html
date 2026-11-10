@@ -1034,7 +1034,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.94</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.95</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2068,12 +2068,12 @@ function attackedFlow(){
   const no = amf()?"Antimagic: no spells": S.shield?`Shield is already up (AC ${A})`: S.reaction?"Reaction already used this round": !lo?"No spell slots left": inc?`${inc}: no reactions`:"";
   openModal(`<h3>I'm attacked</h3>
     ${S.cover==="total"?`<p class="small" style="color:var(--good)">You have total cover: it can't target you directly.</p>`:""}
-    ${!S.shield&&!prepN("Shield")?"":`<div class="shbox src-shield"><div class="shtitle">${S.shield?"Shield is up":"Activate Shield?"}</div>
+    ${amf()||!S.shield&&!prepN("Shield")?"":`<div class="shbox src-shield"><div class="shtitle">${S.shield?"Shield is up":"Activate Shield?"}</div>
       <div class="shac"><span class="num shfrom">${S.shield?A-5:A}</span><span class="sharr">→</span><b class="num shto">${S.shield?A:A+5}</b><span class="small muted">AC</span></div>
       ${S.shield?"":`<div class="small muted">Blocks hits of <b>${A}–${A+4}</b></div>`}
       ${ONE_SLOT_RULE&&S.round&&S.phase==="mine"&&S.turn.slot&&!S.shield?`<div class="small" style="color:var(--warn)">You already spent a spell slot this turn. DM rule: one slotted spell on your own turn, reactions included.</div>`:""}
       <button class="btn pri src-shield shbtn ${!no&&lo>1?"shup":""}" id="akShield" ${no?"disabled":""}>${no?esc(no):lo>1?`Cast Shield · ${ORD[lo]} slot (no 1st left) · Reaction`:`Cast Shield · 1st slot · Reaction`}</button></div>`}
-    <div class="label" style="margin-top:12px">${S.shield?"Did it still hit?":prepN("Shield")?"No Shield? Did it hit?":"Did it hit?"}</div>
+    <div class="label" style="margin-top:12px">${amf()?"Did it hit?":S.shield?"Did it still hit?":prepN("Shield")?"No Shield? Did it hit?":"Did it hit?"}</div>
     <div class="akhm"><button class="btn rw-miss" id="akGo">It hit → damage</button><button class="btn rw-hit akmiss" id="akMiss" data-close="1">It missed</button></div>
     <div class="row"><button class="btn sm" data-close="1">Cancel</button></div>`);
   const akS=document.getElementById("akShield"); if(akS) akS.onclick=e=>{ if(no) return; const btn=e.currentTarget; if(lo>1&&!btn.dataset.ok){ btn.dataset.ok="1"; btn.textContent=`Tap again to spend a ${ORD[lo]}-level slot on Shield`; return; } S.used[lo]=(S.used[lo]||0)+1; if(S.round&&S.phase==="mine") S.turn.slot=true; closeModal(); ev({k:"note",label:`Attacked → Shield (AC ${A} → ${A+5})`}); doCast(sh,lo); toastMsg(`Shield up: AC ${A+5} until your turn starts. ${ORD[lo]} slot and Reaction used`); };
@@ -2564,9 +2564,9 @@ function renderTurn(){
      <div class="card-h"><h2>Reactions</h2><button class="eco ${R?"used":""}" id="rToggle" title="Tap to fix by hand">${R?"Reaction used":"Reaction ready"}</button></div>
      ${inc||lockR||!bbCard?"":`<div class="freetrig"><div class="ftlab">Free. When enemy moves willingly</div>${bbCard}</div><div class="ftsep"><span>Reactions · 1 per round</span></div>`}
      <div class="tgrid" ${lockR?"inert":""}>
-       <button class="opt src-atk" id="rAtk"><b>⚔ I'm attacked</b><span>${S.shield?`Shield is up · AC ${cur} · hit or miss`:prepN("Shield")?`Shield → AC ${cur+5} · or mark hit / miss`:`AC ${cur} · mark hit / miss`}</span></button>
+       <button class="opt src-atk" id="rAtk"><b>⚔ I'm attacked</b><span>${amf()?`AC ${cur} · mark hit / miss`:S.shield?`Shield is up · AC ${cur} · hit or miss`:prepN("Shield")?`Shield → AC ${cur+5} · or mark hit / miss`:`AC ${cur} · mark hit / miss`}</span></button>
        ${S.shield?`<button class="opt src-shield active" id="rShieldOff"><b>Shield ✦ up</b><span>+5 AC until your turn starts</span></button>`
-         :!prepN("Shield")?"":opt("rShield","Shield","Smaller hits · tap to cast · AC → "+(cur+5),R||!anySlot,"shield")}
+         :!prepN("Shield")?"":opt("rShield","Shield",amf()?"Antimagic: no spells":"Smaller hits · tap to cast · AC → "+(cur+5),R||!anySlot||amf(),"shield")}
        ${opt("rSong","Song of Defense",song?"Big hits · slot level × 5 off the damage":"Needs Bladesong active",R||!song||!anySlot,"song")}
        ${!prepN("Counterspell")?"":opt("rCounter","Counterspell",AM?"Antimagic: no spells":"Enemy casts within 60 ft · 3rd slot",R||!hasL(3)||AM,"cspell")}
        ${S.readied?`<button class="opt src-atk active" id="rReady"><b>Readied: ${S.readied.k==="atk"?W+" attack":"spell"} ✦</b><span>${S.readied.trig?`When ${esc(S.readied.trig)} · `:""}tap when it happens · uses your Reaction</span></button>`:""}
