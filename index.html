@@ -1034,7 +1034,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.92</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.93</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2616,7 +2616,7 @@ function wireTurn(){
   on("oSpellA",()=>{ const el=document.querySelector(".spsec.act"); if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200); } });
   on("oAlt",()=>{ const dag=as+C.prof, dd=`1d4+${as}`;
     openModal(`<h3>Other action</h3><p class="small muted">Uses your Action.</p>
-     <div class="row">${S.haste?"":`<button class="btn" data-oa="Dash">Dash</button>`}<button class="btn" data-oa="Disengage">Disengage</button><button class="btn" data-oa="Dodge">Dodge</button><button class="btn" data-oa="Help">Help</button><button class="btn" data-oa="Hide">Hide</button><button class="btn" data-oa="Ready">Ready</button><button class="btn" data-oa="Other">Something else</button></div>
+     <div class="row">${S.haste?"":`<button class="btn" data-oa="Dash" data-tip="Extra movement equal to your Speed for this turn.">Dash</button>`}<button class="btn" data-oa="Disengage" data-tip="For the rest of this turn, your movement doesn't provoke Opportunity Attacks.">Disengage</button><button class="btn" data-oa="Dodge" data-tip="Until the start of your next turn: attack rolls against you have Disadvantage if you can see the attacker, and you make DEX saves with Advantage. It ends early if you're Incapacitated or your Speed is 0.">Dodge</button><button class="btn" data-oa="Help" data-tip="Before your next turn, one ally gets Advantage on their next attack against an enemy within 5 ft of you, or on their next check with a skill or tool you're proficient in.">Help</button><button class="btn" data-oa="Hide" data-tip="Only while heavily obscured or behind three-quarters or total cover, out of enemies' sight. DC 15 Dexterity (Stealth) check. On a success you're Invisible until you make noise, attack, cast a spell, or an enemy finds you.">Hide</button><button class="btn" data-oa="Ready" data-tip="Pick a trigger and what you'll do (an action, or a move). When the trigger happens, you use your Reaction to do it. A readied spell needs Concentration until then.">Ready</button><button class="btn" data-oa="Other">Something else</button></div>
      <p class="small muted" style="margin:0">Casting a spell? Pick it from the prepared spells under the turn options.</p>
      <div class="row"><button class="btn pri sm" id="oaDag">Dagger ${sgn(dag)} · ${dd} (thrown 20/60)</button><button class="btn sm" id="oaUA">Unarmed +3 · 0</button></div>
      <div class="row"><button class="btn" data-close="1">Cancel</button></div>`);
