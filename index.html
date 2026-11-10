@@ -1034,7 +1034,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.95</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.96</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2054,7 +2054,7 @@ function applyDamage(amount, opts={}){
 function damageFlow(val){
   const inp=document.getElementById("hpAmt");
   const v=(typeof val==="number"?val:(inp?+inp.value:0))||0; if(v<=0) return;
-  if((S.song.on && !S.reaction && SL().some(l=>slotsLeft(l)>0))||absorbOn()||absorbCan()){ if(inp) inp.value=""; sodModal(v,{title:S.song.on?"Song of Defense":"Take damage"}); return; }
+  if((S.song.on && !amf() && !S.reaction && SL().some(l=>slotsLeft(l)>0))||absorbOn()||absorbCan()){ if(inp) inp.value=""; sodModal(v,{title:S.song.on?"Song of Defense":"Take damage"}); return; }
   if(false){
     const btns=SL().filter(l=>slotsLeft(l)>0).map(l=>`<button class="btn song" data-sod="${l}">${ORD[l]} slot: −${5*l} → ${Math.max(0,v-5*l)}</button>`).join("");
     openModal(`<h3>Song of Defense?</h3><p class="muted small">Bladesong is active. Use your Reaction and spend a slot to reduce the ${v} damage by 5 × the slot level.</p><div class="row">${btns}</div><div class="row"><button class="btn" id="sodNo">Take the full ${v}</button></div>`);
@@ -2086,8 +2086,8 @@ function attackedFlow(){
   document.getElementById("akMiss").addEventListener("click",()=>{ ev({k:"note",label:"Attacked: it missed"}); persist(); });
 }
 function sodModal(v0,o={}){
-  const can=S.song.on&&!S.reaction&&!incap()&&SL().some(l=>slotsLeft(l)>0);
-  const why=!S.song.on?"Song of Defense needs Bladesong active.":S.reaction?"Song of Defense: Reaction already used this round.":incap()?`Song of Defense: ${incap()}, no reactions.`:"Song of Defense: no spell slots left.";
+  const can=S.song.on&&!amf()&&!S.reaction&&!incap()&&SL().some(l=>slotsLeft(l)>0);
+  const why=!S.song.on?"Song of Defense needs Bladesong active.":amf()?"Song of Defense: off in antimagic (it spends a spell slot).":S.reaction?"Song of Defense: Reaction already used this round.":incap()?`Song of Defense: ${incap()}, no reactions.`:"Song of Defense: no spell slots left.";
   openModal(`<h3>${esc(o.title||"Song of Defense")}</h3>${o.warn?`<p class="small" style="color:var(--warn);margin:0 0 6px">${esc(o.warn)}</p>`:""}
     <label class="label" for="sodIn">Damage you take</label><input id="sodIn" class="bigin num" type="number" inputmode="numeric" min="1" value="${v0||""}" aria-label="Damage" enterkeyhint="done">
     <div class="row"><button class="btn bad" id="sodNo" disabled>Take damage</button><button class="btn" data-close="1">Cancel</button></div>
@@ -2567,7 +2567,7 @@ function renderTurn(){
        <button class="opt src-atk" id="rAtk"><b>⚔ I'm attacked</b><span>${amf()?`AC ${cur} · mark hit / miss`:S.shield?`Shield is up · AC ${cur} · hit or miss`:prepN("Shield")?`Shield → AC ${cur+5} · or mark hit / miss`:`AC ${cur} · mark hit / miss`}</span></button>
        ${S.shield?`<button class="opt src-shield active" id="rShieldOff"><b>Shield ✦ up</b><span>+5 AC until your turn starts</span></button>`
          :!prepN("Shield")?"":opt("rShield","Shield",amf()?"Antimagic: no spells":"Smaller hits · tap to cast · AC → "+(cur+5),R||!anySlot||amf(),"shield")}
-       ${opt("rSong","Song of Defense",song?"Big hits · slot level × 5 off the damage":"Needs Bladesong active",R||!song||!anySlot,"song")}
+       ${opt("rSong","Song of Defense",amf()?"Antimagic: spends a spell slot":song?"Big hits · slot level × 5 off the damage":"Needs Bladesong active",R||!song||!anySlot||amf(),"song")}
        ${!prepN("Counterspell")?"":opt("rCounter","Counterspell",AM?"Antimagic: no spells":"Enemy casts within 60 ft · 3rd slot",R||!hasL(3)||AM,"cspell")}
        ${S.readied?`<button class="opt src-atk active" id="rReady"><b>Readied: ${S.readied.k==="atk"?W+" attack":"spell"} ✦</b><span>${S.readied.trig?`When ${esc(S.readied.trig)} · `:""}tap when it happens · uses your Reaction</span></button>`:""}
        ${opt("rOA","Opportunity attack",`Enemy leaves your reach · ${W} ${sgn(rb)}${AM?"":" · Booming Blade · or a spell (War Caster)"}`,R)}
@@ -2716,7 +2716,7 @@ function renderCombat(){
   <li>No spells, no cantrips: Booming Blade, Green-Flame Blade, Shield, Counterspell and Absorb Elements are locked.</li>
   <li>Magic items are plain: ${hasRapier()?"Rapier +0":"Dagger"}${eq("leather")?", Leather Armor +0 (AC −1)":""}, Mind Sharpener and Boots off.</li>
   <li>Spells already on you are suppressed, not ended: ${S.haste?"Haste gives nothing now, but your Concentration keeps it alive. Leaving the area brings it back. ":""}${S.shield?"Shield gives nothing now. ":""}Their time still runs.</li>
-  <li>Bladesong and Song of Defense are class features, not spells, so they still work here. Check with the DM.</li></ul></div>`:"");
+  <li>Song of Defense is off: it spends a spell slot. Bladesong stays on (class feature, not a spell). Check with the DM.</li></ul></div>`:"");
   const hpCard=`  <div class="card span2 hpcard">
     <div class="card-h"><h2>Hit Points</h2><span class="small muted">Hit Dice ${S.hd}/${C.level} d6</span></div>
     <div class="hpbig"><span class="cur num">${S.hp}</span><span class="muted">/ ${C.maxHp}</span>${S.temp?`<span style="color:var(--song)">+${S.temp} temp</span>`:""}</div>
