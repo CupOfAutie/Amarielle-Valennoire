@@ -1,5 +1,5 @@
 /* Amari app service worker. CACHE is stamped by build.sh with the site version + content hash. */
-const CACHE = "amari-v43.96-c3bb1651ff";
+const CACHE = "amari-v43.96-54db470df7";
 const CORE = ["./", "./index.html", "./pwa.js", "./manifest.webmanifest",
   "./icons/icon-192.png?v=2", "./icons/icon-512.png?v=2", "./icons/maskable-192.png?v=2", "./icons/maskable-512.png?v=2",
   "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
@@ -28,9 +28,11 @@ self.addEventListener("fetch", e => {
   if (url.origin !== location.origin) return;
   /* the page itself: network first so a new site version shows up as soon as you're online; cache when offline */
   if (req.mode === "navigate") {
+    /* practice.html is a separate page with its own storage: never cache it as (or fall back to) the real app */
+    const page = url.pathname.endsWith("/practice.html") ? "./practice.html" : "./index.html";
     e.respondWith(fetch(req, {cache: "no-store"})
-      .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put("./index.html", copy)); return r; })
-      .catch(() => caches.match("./index.html")));
+      .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(page, copy)); return r; })
+      .catch(() => caches.match(page)));
     return;
   }
   /* everything else from this site: cache first */
