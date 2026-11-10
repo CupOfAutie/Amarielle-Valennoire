@@ -78,6 +78,18 @@ body.bladesong .avatar{border-color:var(--song);box-shadow:0 0 0 3px var(--song-
 .hprow{display:flex;align-items:center;justify-content:space-between;gap:4px}
 .hpq{width:26px;height:26px;border-radius:50%;border:1.5px solid currentColor;background:transparent;font-size:1.1rem;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex:none}
 .hpq.bad{color:var(--bad)} .hpq.good{color:var(--good)}
+.hpstep{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px}
+.vital.hp .hpq{border:0;color:#fff!important;font-weight:700}
+.vital.hp .hpq.bad{background:#b8322c}.vital.hp .hpq.good{background:#2f7d45}
+.vital.hp .hpnumrow{display:flex;align-items:center;justify-content:center;gap:6px}
+.vital.hp .hpq.temp{width:22px;height:22px;font-size:.75rem;background:linear-gradient(180deg,#e2b85a,#b8892e);color:#2a1636!important}
+.hps.big{width:38px;height:38px;min-width:0;padding:0;border-radius:50%;font-size:1.4rem;font-weight:700;align-self:center;color:#fff;border:0;cursor:pointer;line-height:1;font-family:var(--f-body,inherit)}
+.hps.big.minus{background:#b8322c;margin-inline-end:4px}.hps.big.plus{background:#2f7d45;margin-inline-start:6px}
+.hps.big:active{filter:brightness(1.15)}
+html #bDmg{background:#b8322c!important;color:#fff!important;border-color:#8e221d!important}
+html #bHeal{background:#2f7d45!important;color:#fff!important;border-color:#215a31!important}
+html #bDmg:hover,html #bHeal:hover{filter:brightness(1.1)}
+html #bTemp{background:linear-gradient(180deg,#e2b85a,#b8892e)!important;color:#2a1636!important;border-color:#8a6224!important;font-weight:600}
 .vital.hp b{color:var(--good)} .vital.hp.low b{color:var(--warn)} .vital.hp.crit b{color:var(--bad)}
 .song-btn{border:1.5px solid var(--song);background:transparent;color:var(--song);border-radius:8px;padding:4px 10px;font-family:var(--f-title);font-size:.95rem;white-space:nowrap}
 body.bladesong .song-btn{background:var(--song);color:var(--surface)}
@@ -1034,7 +1046,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.96</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.97</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2108,6 +2120,21 @@ function sodModal(v0,o={}){
   const full=()=>{ const v=+inp.value||0; if(!(v>0)) return; closeModal(); applyDamage(v); };
   inp.addEventListener("input",draw); no.onclick=full; inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ if(wrap) inp.blur(); else full(); } }); draw();
 }
+function hpStep(d){
+  if(d>0){ if(S.hp>=C.maxHp) return; const was0=S.hp===0; S.hp+=1; if(was0){S.death={s:0,f:0}; if(S.conds) delete S.conds.Unconscious;} persist(); render(); return; }
+  if(S.temp>0){ S.temp-=1; persist(); render(); return; }
+  if(S.hp<=0) return; S.hp-=1; persist(); render();
+  if(S.hp===0) downAt0();
+}
+function downAt0(){ S.conds=S.conds||{}; S.conds.Unconscious="down"; S.conds.Prone=true; if(S.conc){ const nh=S.conc.name==="Haste"; S.conc=null; if(nh) nivLost(); } if(S.song.on){S.song.on=false;} persist(); render();
+  openModal(`<h3>Amari drops to 0 HP</h3><p>She's Unconscious. Bladesong and Concentration end. Track death saves on the Combat tab.</p><div class="row"><button class="btn pri" data-close="1">OK</button></div>`); }
+function tempFlow(){
+  openModal(`<h3>Temporary HP</h3><p class="small muted">Now: ${S.temp||0}. Temporary HP don't stack: keep the higher number. 0 clears them.</p>
+    <input id="tpIn" class="bigin num" type="number" inputmode="numeric" min="0" value="${S.temp||""}" aria-label="Temporary HP">
+    <div class="row"><button class="btn" id="tpGo" style="background:linear-gradient(180deg,#e2b85a,#b8892e);color:#2a1636;font-weight:600">Set temp HP</button><button class="btn" data-close="1">Cancel</button></div>`);
+  const go=()=>{ S.temp=Math.max(0,parseInt(document.getElementById("tpIn").value,10)||0); persist(); closeModal(); render(); };
+  document.getElementById("tpGo").onclick=go; document.getElementById("tpIn").addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+}
 function quickHp(kind){
   const d=kind==="dmg";
   openModal(`<h3>${d?"Take damage":"Heal"}</h3><p class="small muted">HP ${S.hp}/${C.maxHp}${S.temp?` · ${S.temp} temp`:""}${d&&S.conc?` · concentrating on ${esc(S.conc.name)}`:""}</p>
@@ -2675,7 +2702,7 @@ function render(){
 function hpClass(){ const p=S.hp/C.maxHp; return p<=.25?"crit":p<=.5?"low":""; }
 function renderHeader(){
   document.getElementById("vitals").innerHTML=`
-   <div class="vital hp ${hpClass()}"><div class="hprow"><button class="hpq bad" id="hMinus" aria-label="Take damage">−</button><b class="num">${S.hp}${S.temp?`<small style="font-size:.7em;color:var(--song)">+${S.temp}</small>`:""}</b><button class="hpq good" id="hPlus" aria-label="Heal">+</button></div><span class="label">HP / ${C.maxHp}</span></div>
+   <div class="vital hp ${hpClass()}"><div class="hpnumrow"><b class="num">${S.hp}${S.temp?`<small style="font-size:.7em;color:var(--song)">+${S.temp}</small>`:""}</b><button class="hpq temp" id="hTemp" aria-label="Set temporary HP" title="Temporary HP">T</button></div><div class="hpstep"><button class="hpq bad" id="hMinus" aria-label="Lose 1 HP">−</button><span class="label">HP / ${C.maxHp}</span><button class="hpq good" id="hPlus" aria-label="Gain 1 HP">+</button></div></div>
    <div class="vital src-${acSrc()} ${S.shield?"shieldup":""}" ${S.shield?'title="Shield is up until your turn starts"':""}><b class="num" style="color:var(--src,var(--ink))">${ac()}</b><span class="label">${S.shield&&!S.cover?`<span style="color:var(--shield)">AC · Shield</span>`:S.cover?`<span style="color:#2f7d6d" title="${COVER[S.cover].n}">${S.cover==="total"?"⛨ Total":"AC ⛨"}</span>`:"AC"}</span></div>
    <div class="vital src-${spSrc()}"><b class="num" style="color:var(--src,var(--ink))">${speed()}</b><span class="label">Speed</span></div>
    <button class="vital initv ${S.round?"":"ready"}" id="vInit" title="${S.round?"Change initiative":"Roll initiative and start combat"}"><b class="num">${sgn(DEX)}</b><span class="label">${S.round?"Init":"Roll init"}</span></button>
@@ -2683,8 +2710,8 @@ function renderHeader(){
   document.getElementById("songBtn").onclick=toggleSong;
   document.querySelectorAll("[data-hsu]").forEach(b=>b.onclick=()=>{const i=+b.dataset.hsu, sp=i>=S.song.max-S.song.used; if(!sp&&!S.song.on){ toggleSong(); return; } S.song.used=Math.max(0,Math.min(S.song.max,S.song.used+(sp?-1:1))); persist(); render();});
   document.getElementById("hShort").onclick=shortRest; document.getElementById("hLong").onclick=longRest;
-  document.getElementById("hMinus").onclick=()=>quickHp("dmg");
-  document.getElementById("hPlus").onclick=()=>quickHp("heal");
+  document.getElementById("hMinus").onclick=()=>hpStep(-1); document.getElementById("hTemp").onclick=()=>tempFlow();
+  document.getElementById("hPlus").onclick=()=>hpStep(1);
   document.getElementById("vInit").onclick=async()=>{ if(S.round){ editInit(); return; } const r=await rollCheck("Initiative",DEX); S.init=r.total; S.initNat=r.nat; startCombat(); };
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
 }
@@ -2719,7 +2746,7 @@ function renderCombat(){
   <li>Song of Defense is off: it spends a spell slot. Bladesong stays on (class feature, not a spell). Check with the DM.</li></ul></div>`:"");
   const hpCard=`  <div class="card span2 hpcard">
     <div class="card-h"><h2>Hit Points</h2><span class="small muted">Hit Dice ${S.hd}/${C.level} d6</span></div>
-    <div class="hpbig"><span class="cur num">${S.hp}</span><span class="muted">/ ${C.maxHp}</span>${S.temp?`<span style="color:var(--song)">+${S.temp} temp</span>`:""}</div>
+    <div class="hpbig"><button class="hps big minus" id="cM1" aria-label="Lose 1 HP">−</button><span class="cur num">${S.hp}</span><span class="muted">/ ${C.maxHp}</span>${S.temp?`<span style="color:var(--song)">+${S.temp} temp</span>`:""}<button class="hps big plus" id="cP1" aria-label="Gain 1 HP">+</button></div>
     <div class="hpbar"><i class="${hpClass()}" style="width:${p}%"></i></div>
     <div class="row"><label class="label" for="hpAmt">Amount</label><input id="hpAmt" class="hpin num" type="number" inputmode="numeric" min="0" placeholder="0">
       <button class="btn bad" id="bDmg">Damage</button><button class="btn good" id="bHeal">Heal</button><button class="btn" id="bTemp">Set temp</button></div>
@@ -2750,6 +2777,7 @@ function renderCombat(){
   wireTurn(); wireCol();
   const q=id=>document.getElementById(id);
   q("bDmg").onclick=()=>damageFlow();
+  q("cM1").onclick=()=>hpStep(-1); q("cP1").onclick=()=>hpStep(1);
   q("bAtk").onclick=attackedFlow;
   q("bHeal").onclick=()=>{heal(+q("hpAmt").value);};
   q("bTemp").onclick=()=>{S.temp=Math.max(0,+q("hpAmt").value|0);persist();render();};
