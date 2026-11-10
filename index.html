@@ -730,6 +730,13 @@ svg.dval{width:44px;height:44px}svg.dval text{font:700 30px var(--f-title);fill:
 .atkdmg.miss{opacity:.28;filter:grayscale(1)}.atkdmg.miss .rbig{text-decoration:line-through}
 .atkdmg.lit .rbig{color:#ffe9b0;text-shadow:0 0 16px rgba(255,205,110,.55)}
 .nextwrap{display:flex;flex-direction:column;gap:4px}
+.amfbar{margin:0 0 4px !important;border:1px solid #7a7a9a;border-left:5px solid #7a7a9a;border-radius:10px;padding:8px 12px;margin:6px 0;background:color-mix(in srgb,#7a7a9a 10%,transparent)}
+.amfbar ul{margin:6px 0 0;padding-left:18px}
+.amfbar li{margin:2px 0}
+.eqbox{width:28px;height:28px;flex:0 0 auto;border:2px solid var(--gold);border-radius:6px;background:transparent;padding:0;cursor:pointer;margin-left:auto}
+.eqbox[aria-pressed="true"]{background:var(--gold)}
+.eqbox:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.item.off .in,.item.off .iicon{opacity:.45}
 .ordwrap{position:relative}
 .ordwrap>.opt{width:100%}
 .ordwrap.on>.opt{padding-right:78px}
@@ -1024,7 +1031,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.90</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.91</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -1055,7 +1062,16 @@ const PREP_TABLE={1:4,2:5,3:6,4:7,5:9,6:10,7:11,8:12,9:14,10:15,11:16,12:16,13:1
 const LEVEL_FEATS={12:"Ability Score Improvement or feat",13:"7th-level spell slot",14:"Song of Victory: while Bladesong is active, add your INT modifier to the damage of your melee weapon attacks",15:"8th-level spell slot",16:"Ability Score Improvement or feat",17:"9th-level spell slot",18:"Spell Mastery: pick a 1st and a 2nd-level spell you can cast at their lowest level without a slot",19:"Epic Boon feat",20:"Signature Spells: two 3rd-level spells, each castable once per Short Rest without a slot"};
 const ASI_LEVELS=[4,8,12,16,19];
 const SL = () => Object.keys(C.slots).map(Number);
-function itemFx(k){ let t=0; ITEMS.forEach(it=>{ if(it.att&&!S.attuned[it.id]) return; (it.fx||[]).forEach(f=>{ if(f.k===k) t+=(+f.v||0); }); }); return t; }
+/* v43.91 (Omer): items can be off ("not on me") in Gear; antimagic (S.amf) switches off spells, magic items and spell effects */
+const eq=id=>!(S.offItems&&S.offItems[id]);
+const amf=()=>!!S.amf;
+const hasteOn=()=>!!S.haste&&!amf();
+const shieldOn=()=>!!S.shield&&!amf();
+const hasRapier=()=>eq("rapier");
+const WN=()=>hasRapier()?"Rapier":"Dagger";
+const wPlus=()=>hasRapier()&&!amf()?1:0;
+const wDie=()=>hasRapier()?"1d8":"1d4";
+function itemFx(k){ let t=0; ITEMS.forEach(it=>{ if(it.att&&!S.attuned[it.id]) return; if(!eq(it.id)||amf()) return; (it.fx||[]).forEach(f=>{ if(f.k===k) t+=(+f.v||0); }); }); return t; }
 function applyChar(){
   if(S.attuned&&"ms2" in S.attuned){ delete S.attuned.ms2; if(S.charges) delete S.charges.ms2; }
   const ch=S.char; const L=ch.level;
@@ -1064,7 +1080,7 @@ function applyChar(){
   INT=mod(C.abil.INT); DEX=mod(C.abil.DEX); CON=mod(C.abil.CON);
   C.prof=2+Math.floor((L-1)/4);
   C.maxHp=(6+CON)+(L-1)*(4+CON)+(ch.hpBonus||0)+itemFx("hp");
-  C.baseAC=12+DEX+itemFx("ac"); C.speed=30+itemFx("speed");
+  C.baseAC=(eq("leather")?11+(amf()?0:1):10)+DEX+itemFx("ac"); C.speed=30+itemFx("speed");
   C.slots=Object.fromEntries(SLOT_TABLE[L].map((n,i)=>[i+1,n]));
   SL().forEach(l=>{ if(S.used[l]==null) S.used[l]=0; });
   C.spellAtk=C.prof+INT+itemFx("spell"); C.spellDC=8+C.prof+INT+itemFx("spell");
@@ -1290,16 +1306,16 @@ async function flush(){
 /* ================= DERIVED NUMBERS ================= */
 const COVER={half:{n:"Half cover",v:2},tq:{n:"Three-quarters cover",v:5},total:{n:"Total cover",v:0}};
 const coverV = () => (COVER[S.cover]||{v:0}).v;
-const ac = () => C.baseAC + (S.song.on?INT:0) + (S.shield?5:0) + (S.haste?2:0) + coverV() + (hasB("sof")?2:0) + cfxSum("ac");
+const ac = () => C.baseAC + (S.song.on?INT:0) + (shieldOn()?5:0) + (hasteOn()?2:0) + coverV() + (hasB("sof")?2:0) + cfxSum("ac");
 const speedCond = () => (S.lethargy?"Haste lethargy":"") || SPEED0.find(hasC) || (exh()?"Exhaustion":"");
-const speed = () => (S.lethargy||SPEED0.some(hasC)) ? 0 : Math.max(0,((C.speed + (S.song.on?10:0) + cfxSum("speed")) * (S.haste?2:1)) - 5*exh());
+const speed = () => (S.lethargy||SPEED0.some(hasC)) ? 0 : Math.max(0,((C.speed + (S.song.on?10:0) + cfxSum("speed")) * (hasteOn()?2:1)) - 5*exh());
 const concMod = () => CON + (S.song.on?INT:0) + (C.saveBonus||0);
-const rapD = () => `1d8+${atkStat()+1+(S.song.on&&C.level>=14?INT:0)}`;
-const rb0 = () => atkStat()+C.prof+1;
+const rapD = () => `${wDie()}+${atkStat()+wPlus()+(S.song.on&&C.level>=14?INT:0)}`;
+const rb0 = () => atkStat()+C.prof+wPlus();
 const atkStat = () => S.song.on ? Math.max(INT,DEX) : DEX;
 const slotsLeft = l => C.slots[l] - (S.used[l]||0);
 const attunedCount = () => Object.values(S.attuned).filter(Boolean).length;
-const msAvailable = () => ["ms1"].filter(k=>S.attuned[k] && S.charges[k]>0);
+const msAvailable = () => ["ms1"].filter(k=>S.attuned[k] && eq(k) && !amf() && S.charges[k]>0);
 
 /* ================= CONDITIONS (2024 PHB) ================= */
 const CONDS={
@@ -1343,7 +1359,7 @@ function condRoll(label){
   if(isCheck){ ["Poisoned","Frightened"].forEach(c=>hasC(c)&&r.dis.push(c)); }
   if(isInit){ if(INCAP.some(hasC)) r.dis.push(incap()); if(hasC("Invisible")) r.adv.push("Invisible"); }
   if(isSave && /^(str|dex)/.test(L)){ const f=["Paralyzed","Petrified","Stunned","Unconscious"].find(hasC); if(f) r.fail=f; if(/^dex/.test(L)&&hasC("Restrained")) r.dis.push("Restrained"); }
-  if(isSave && /^dex/.test(L) && S.haste) r.adv.push("Haste");
+  if(isSave && /^dex/.test(L) && hasteOn()) r.adv.push("Haste");
   const bw=[];
   if(isSave && /^dex/.test(L) && coverV()){ r.bon+=coverV(); bw.push(`+${coverV()} ${COVER[S.cover].n}`); }
   if(isSave && hasB("aura")){ r.bon+=4; bw.push(`+4 ${BOOSTS.aura.n}`); }
@@ -1521,7 +1537,7 @@ function svMods(){ const A='<span class="svA" aria-label="Advantage">A</span>', 
   const L=[`${A}against being <b>Charmed</b> <span class="muted">(Fey Ancestry)</span>`,
     `${A}on <b class="svcon">CON</b> saves to keep <b>Concentration</b> <span class="muted">(War Caster)</span>`];
   if(S.song&&S.song.on) L.push(`${B("+"+mod(C.abil.INT))}on <b class="svcon">CON</b> Concentration saves <span class="muted">(Bladesong)</span>`);
-  if(S.haste) L.push(`${A}on <b class="svcon">DEX</b> saves <span class="muted">(Haste)</span>`);
+  if(hasteOn()) L.push(`${A}on <b class="svcon">DEX</b> saves <span class="muted">(Haste)</span>`);
   if(hasB("aura")) L.push(`${B("+4")}on all saves <span class="muted">(${BOOSTS.aura.n})</span>`);
   if(hasB("bless")) L.push(`${B("+d4")}on saves and attacks <span class="muted">(${BOOSTS.bless.n})</span>`);
   return `<div class="svmods"><span class="label">Saving throw modifiers</span>${L.map(x=>`<div class="svm">${x}</div>`).join("")}</div>`; }
@@ -1566,7 +1582,7 @@ let lastD20=null, lastDmg=null;
 /* damage dice picture: one die per die with its number, colored by source, damage type per group */
 function dmgMeta(label,dtype,G){ const cant=/booming/i.test(label)?["bb","Booming Blade","thunder"]:/green-flame/i.test(label)?["gfb","Green-Flame Blade","fire"]:null;
   const types=String(dtype||"").split(/\s*\+\s*/).filter(Boolean), multi=G.length>1;
-  return G.map((g,i)=>({src:cant?(multi?(i===0?"Rapier":cant[1]):cant[1]):"", type:types[i]||types[types.length-1]||(cant&&(i>0||!multi)?cant[2]:""), col:multi&&cant&&i>0?DIECOL[cant[0]]:DIECOL.gold})); }
+  return G.map((g,i)=>({src:cant?(multi?(i===0?WN():cant[1]):cant[1]):"", type:types[i]||types[types.length-1]||(cant&&(i>0||!multi)?cant[2]:""), col:multi&&cant&&i>0?DIECOL[cant[0]]:DIECOL.gold})); }
 /* rolling animation + sound (App rolls only) */
 const rollId=o=>{ if(!o) return ""; if(!o._id){ o._id=Date.now().toString(36)+Math.random().toString(36).slice(2,6); o._t=Date.now(); } return o._id; };
 const animAttr=o=>S.physical||!o||/your dice/.test(o.note||"")?"":` rollanim" data-rid="${rollId(o)}" data-rt="${o._t||0}`;
@@ -1575,7 +1591,7 @@ function dieValSvg(f,v,col){ const outer=(DIEPATH[f]||DIEPATH[6]).split("/>")[0]
 function flatSrc(label){ const L=String(label||""); const st=S.song.on&&INT>DEX?"INT (Bladesong)":"DEX";
   if(/arcane vigor|green-flame leap/i.test(L)) return "INT";
   if(/dagger/i.test(L)) return st==="DEX"?"DEX":st;
-  if(/rapier|booming|green-flame|readied|opportunity/i.test(L)) return `${st} + Rapier +1`;
+  if(/rapier|booming|green-flame|readied|opportunity/i.test(L)) return wPlus()?`${st} + Rapier +1`:st;
   return "modifier"; }
 function dmgViz(d,label,dtype){ if(!d||!d.groups||!d.groups.length) return ""; const G=d.groups, M=dmgMeta(label||"",dtype||d.dtype||"",G);
   const per=G.map((g,i)=>g.rs?g.rs.reduce((a,b)=>a+b,0)+g.max+(i===0?(d.flat||0):0):null);
@@ -1764,7 +1780,7 @@ const CANCEL={cancel:true}; let undoSnap=null, rolledSinceSnap=false;
 function takeSnap(){ const k=["turn","reaction","used","rider","absorb","bbTarget","riderEvi","conc","haste","shield","lethargy","conds","song"]; undoSnap={st:JSON.stringify(Object.fromEntries(k.map(x=>[x,S[x]===undefined?null:S[x]]))), ev:S.cur?S.cur.ev.length:0}; rolledSinceSnap=false; }
 document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("button"); if(!b||b.closest("#modal")||b.closest("#ask")||b.closest("#result")) return; takeSnap(); },true);
 /* tap a chosen Action / Bonus Action option again to undo it: restores what it spent and frees the slot */
-const UNDO_KEYS=["turn","reaction","used","rider","absorb","bbTarget","riderEvi","conc","haste","shield","lethargy","conds","condDur","condSrc","song","hp","temp","hd","death","charges","cover"];
+const UNDO_KEYS=["turn","reaction","used","rider","absorb","amf","offItems","bbTarget","riderEvi","conc","haste","shield","lethargy","conds","condDur","condSrc","song","hp","temp","hd","death","charges","cover"];
 let pendingChoice=null;
 function choiceId(el){ return el.id || (el.dataset.tsp?`sp:${el.dataset.tsp}:${el.dataset.k}`:""); }
 const CHOICE_ALIAS={oSongOff:["oSong"],oHasteOff:["oHaste","sp:Haste:a"]};
@@ -1906,7 +1922,7 @@ async function rollDmg(label,expr,crit=false,canSkip=false,dtype=""){
   const cant=/booming/i.test(label)?["bb","Booming Blade","thunder"]:/green-flame/i.test(label)?["gfb","Green-Flame Blade","fire"]:null;
   const types=String(dtype||"").split(/\s*\+\s*/).filter(Boolean);
   const multi=G.length>1;
-  G.forEach((g,i)=>{ g.src=cant?(multi?(i===0?"Rapier":cant[1]):cant[1]):"";
+  G.forEach((g,i)=>{ g.src=cant?(multi?(i===0?WN():cant[1]):cant[1]):"";
     g.type=types[i]||types[types.length-1]||(cant&&(i>0||!multi)?cant[2]:"");
     g.col=multi&&cant&&i>0?DIECOL[cant[0]]:DIECOL.gold; g.max=crit?g.n*g.f:0; g.add=i===0?flat:0; g.typed=""; g.dv=Array(g.n).fill(""); });
   const word=n=>["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n]||n;
@@ -2045,7 +2061,7 @@ function damageFlow(val){
 }
 function attackedFlow(){
   const A=ac(), sh=SPELLS.find(x=>x.n==="Shield"), lo=SL().find(l=>slotsLeft(l)>0), inc=incap();
-  const no = S.shield?`Shield is already up (AC ${A})`: S.reaction?"Reaction already used this round": !lo?"No spell slots left": inc?`${inc}: no reactions`:"";
+  const no = amf()?"Antimagic: no spells": S.shield?`Shield is already up (AC ${A})`: S.reaction?"Reaction already used this round": !lo?"No spell slots left": inc?`${inc}: no reactions`:"";
   openModal(`<h3>I'm attacked</h3>
     ${S.cover==="total"?`<p class="small" style="color:var(--good)">You have total cover: it can't target you directly.</p>`:""}
     ${!S.shield&&!prepN("Shield")?"":`<div class="shbox src-shield"><div class="shtitle">${S.shield?"Shield is up":"Activate Shield?"}</div>
@@ -2072,12 +2088,15 @@ function sodModal(v0,o={}){
     <label class="label" for="sodIn">Damage you take</label><input id="sodIn" class="bigin num" type="number" inputmode="numeric" min="1" value="${v0||""}" aria-label="Damage" enterkeyhint="done">
     <div class="row"><button class="btn bad" id="sodNo" disabled>Take damage</button><button class="btn" data-close="1">Cancel</button></div>
     ${absorbOn()?`<div class="label" style="margin-top:10px">${cap(S.absorb.type)} damage? <span class="muted">· Resistance from Absorb Elements</span></div><div class="row"><button class="btn" id="aeHalf" disabled>Take half</button></div>`:""}
-    ${absorbCan()?`<div class="label" style="margin-top:10px">Or Absorb Elements <span class="muted">· Reaction · ${ORD[SL().find(l=>slotsLeft(l)>0)]} slot · half damage</span></div><div class="row" id="aeBtns">${AE_TYPES.map(t=>`<button class="btn" data-aec="${t}" disabled>${cap(t)}</button>`).join("")}</div>`:""}
+    ${absorbCan()?`<div class="label" style="margin-top:10px">Or Absorb Elements <span class="muted">· Reaction · half damage · pick the type, then the slot</span></div><div class="row" id="aeBtns">${AE_TYPES.map(t=>`<button class="btn" data-aec="${t}" aria-pressed="false">${cap(t)}</button>`).join("")}</div><div class="sodgrid" id="aeSlots"></div>`:""}
     ${can?`<div class="label" style="margin-top:10px">Or Song of Defense <span class="muted">· Reaction · −5 × slot level</span></div><div class="sodgrid" id="sodBtns"></div>`:S.song.on?`<p class="small muted" style="margin-top:8px">${why}</p>`:""}`);
-  const inp=document.getElementById("sodIn"), wrap=document.getElementById("sodBtns"), no=document.getElementById("sodNo");
+  const inp=document.getElementById("sodIn"), wrap=document.getElementById("sodBtns"), no=document.getElementById("sodNo"); let aeT="";
   const draw=()=>{ const v=+inp.value||0; no.disabled=!(v>0); no.textContent=v>0?`Take all ${v}`:"Take damage";
     const ah=document.getElementById("aeHalf"); if(ah){ ah.disabled=!(v>0); ah.textContent=v>0?`Take half: ${Math.floor(v/2)}`:"Take half"; ah.onclick=()=>{ closeModal(); const h=Math.floor(v/2); applyDamage(h,{note:`${S.absorb.type} Resistance (${v} → ${h})`}); toastMsg(`${cap(S.absorb.type)} Resistance: took ${h} instead of ${v}`); }; }
-    document.querySelectorAll("[data-aec]").forEach(b=>{ b.disabled=!(v>0); b.onclick=()=>{ const t=b.dataset.aec, l=SL().find(x=>slotsLeft(x)>0), h=Math.floor(v/2); S.used[l]=(S.used[l]||0)+1; S.reaction=true; if(S.round&&S.phase==="mine") S.turn.slot=true; ev({k:"cast",label:`Absorb Elements (${t})`,lvl:l}); closeModal(); absorbSet(t,l); applyDamage(h,{note:`Absorb Elements, ${t} Resistance (${v} → ${h})`}); toastMsg(`Absorb Elements: ${ORD[l]} slot, took ${h} instead of ${v}`); }; });
+    document.querySelectorAll("[data-aec]").forEach(b=>{ b.setAttribute("aria-pressed",String(b.dataset.aec===aeT)); b.classList.toggle("pri",b.dataset.aec===aeT); b.onclick=()=>{ aeT=b.dataset.aec; draw(); }; });
+    const aw=document.getElementById("aeSlots"); if(aw){ const h=Math.floor(v/2);
+      aw.innerHTML=SL().filter(l=>slotsLeft(l)>0).map(l=>`<button class="btn sodb" data-ael="${l}" ${v>0&&aeT?"":"disabled"}><b>${ORD[l]}</b> <span class="small" style="opacity:.75">(${slotsLeft(l)} left)</span><br><span class="small">take ${v>0?`<b class="num">${h}</b>`:"half"}</span><br><span class="small">next turn +${l}d6${aeT?" "+aeT:""}</span></button>`).join("");
+      aw.querySelectorAll("[data-ael]").forEach(b=>b.onclick=()=>{ const l=+b.dataset.ael, t=aeT; if(!t||!(v>0)) return; S.used[l]=(S.used[l]||0)+1; S.reaction=true; if(S.round&&S.phase==="mine") S.turn.slot=true; ev({k:"cast",label:`Absorb Elements (${t})`,lvl:l}); closeModal(); absorbSet(t,l); applyDamage(h,{note:`Absorb Elements, ${ORD[l]} slot, ${t} Resistance (${v} → ${h})`}); toastMsg(`Absorb Elements: ${ORD[l]} slot, took ${h} instead of ${v}`); }); }
     if(!wrap) return;
     const ls=SL().filter(l=>slotsLeft(l)>0);
     wrap.innerHTML=ls.map(l=>`<button class="btn song sodb" data-sod="${l}" ${v>0?"":"disabled"}><b>${ORD[l]}</b> <span class="small" style="opacity:.75">(${slotsLeft(l)} left)</span><br><span class="small">−${5*l}</span> → take ${v>0?(Math.max(0,v-5*l)===0?`<b class="num take0">0</b>`:`<b class="num">${v-5*l}</b>`):`<b class="num">?</b>`}</button>`).join("");
@@ -2263,7 +2282,7 @@ function comboSheet(a,label,next){ return new Promise((res,rej)=>{ const el=docu
 });}
 /* the Extra Attack pair: Rapier + cantrip, in the order Omer picks (S.cantFirst). Returns {evi} of the cantrip attack, or false if the cantrip was never cast */
 async function bladeCombo(name,expr,type){
-  const cf=!!S.cantFirst, L1=cf?"1/2 "+name:"1/2 Rapier", L2=cf?"2/2 Rapier":"2/2 "+name, t1=cf?type:"piercing";
+  const cf=!!S.cantFirst, L1=cf?"1/2 "+name:"1/2 "+WN(), L2=cf?"2/2 "+WN():"2/2 "+name, t1=cf?type:"piercing";
   const a=await attack(L1,rb0(),cf?rapD()+"+"+expr:rapD(),t1,0,"",true); 
   const ent={label:L1+(a.crit?" · CRIT!":""),total:a.d?a.d.total:"–",detail:`d20 ${a.r.nat}${a.r.note?" ("+a.r.note+")":""} ${sgn(a.bonus)}`+(a.d?` · ${a.d.detail} ${t1}`:""),cls:a.d?(a.crit?"nat20":""):"muted",sub:{k:"to hit",v:a.r.total,cls:a.crit?"nat20":a.miss1?"nat1":""},tl:a.d?"damage":"no damage",evi:a.evi,dv:a.r,dmv:a.d};
   const v=await comboSheet(a,L1,L2); if(a.evi==null) ent.hit=a.hit;
@@ -2279,6 +2298,7 @@ const ONE_SLOT_RULE=true; // DM confirmed 2026-11-02: one slotted spell on my ow
 const OA_SPELLS=["Scorching Ray","Chromatic Orb","Hold Person","Suggestion","Charm Person","Polymorph"];
 const isTargeted=sp=>!!sp.rg && !/^self/i.test(sp.rg) && !sp.shield && !/\b\d+[- ]?(ft|foot)[- ]?(radius|cone|cube|line|sphere|emanation)\b|\beach creature in\b/i.test(sp.x||"");
 function castSpell(sp,pay){
+  if(amf()){ toastMsg("Antimagic: you can't cast spells here"); return; }
   /* Omer 2026-11-05: a spell cast from the Spells tab also spends the Action / Bonus Action / Reaction during combat */
   if(!pay&&S.round){ const T=String(sp.t||""), mine=S.phase==="mine";
     if(/^bonus/i.test(T)&&mine) pay=()=>{S.turn.ba=true;}; else if(/^action/i.test(T)&&mine) pay=()=>{S.turn.a=true;}; else if(/^reaction/i.test(T)) pay=()=>{S.reaction=true;}; }
@@ -2316,8 +2336,8 @@ function toastMsg(t){ const el=document.getElementById("toast"); el.innerHTML=`<
 /* Absorb Elements (Omer 2026-11-05): pick the type, resist it until my next turn starts, then +Nd6 of that type on my first melee hit that turn */
 const AE_TYPES=["acid","cold","fire","lightning","thunder"];
 const cap=x=>x[0].toUpperCase()+x.slice(1);
-const absorbOn=()=>S.absorb&&S.absorb.phase==="wait";
-const absorbCan=()=>prepN("Absorb Elements")&&!absorbOn()&&!S.reaction&&!incap()&&SL().some(l=>slotsLeft(l)>0);
+const absorbOn=()=>!amf()&&S.absorb&&S.absorb.phase==="wait";
+const absorbCan=()=>!amf()&&prepN("Absorb Elements")&&!absorbOn()&&!S.reaction&&!incap()&&SL().some(l=>slotsLeft(l)>0);
 function absorbSet(type,lvl){ S.absorb={type,n:Math.max(1,lvl||1),phase:"wait"}; persist(); render(); }
 function absorbFlow(lvl){
   openModal(`<h3>Absorb Elements</h3><p class="small" style="margin:0 0 8px">Which damage type? You have Resistance to it until the start of your next turn, including the hit that triggered it. On your next turn, your first melee hit adds <b>${Math.max(1,lvl||1)}d6</b> of that type.</p>
@@ -2394,9 +2414,9 @@ function longRest(){
 function endMyTurn(){ if(S.lethargy==="now"){ endLethargy(); setTimeout(()=>toastMsg("Lethargy over: you can act normally next turn"),900); } if(S.turn.mv) ev({k:"note",label:`Moved ${S.turn.mv} ft${S.turn.dash?` (Dash ×${S.turn.dash})`:""}`}); ev({k:"turn",label:"My turn ends"}); S.phase="theirs"; if(S.absorb&&S.absorb.phase==="ready") S.absorb=null; persist(); render(); try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){ window.scrollTo(0,0); } toastMsg("Turn ended. Reactions stay available until your next turn"); setTimeout(durCheck,250); }
 function turnBtn(){ return S.phase==="theirs" ? newRound() : endMyTurn(); }
 function newRound(){ if(S.lethargy==="wait") S.lethargy="now"; if(S.absorb) S.absorb=S.absorb.phase==="wait"?Object.assign(S.absorb,{phase:"ready"}):null; S.readied=null; const hadShield=S.shield; S.rider=null; S.turnT=Date.now(); S.phase="mine"; S.reaction=false; S.shield=false; S.turn={a:false,ba:false,h:false}; if(S.round) S.round++; ev({k:"turn",label:"My turn starts"}); persist(); render(); toastMsg((S.round?`Round ${S.round}: your turn.`:"Your turn.")+" Reaction back"+(hadShield?", Shield ended":"")); }
-function spSrc(){ return speedCond()?"cond":S.haste?"haste":S.song.on?"song":""; }
-function acSrc(){ return S.shield?"shield":S.haste?"haste":S.song.on?"song":""; }
-function acParts(){ const p=[`${C.baseAC} base`]; if(S.song.on) p.push(`+${INT} Bladesong`); if(S.haste) p.push("+2 Haste"); if(S.shield) p.push("+5 Shield"); cfxOn().forEach(c=>{ const v=c.eff.filter(e=>e.w==="ac").reduce((x,e)=>x+(e.k==="pen"?-1:e.k==="bon"?1:0)*Math.abs(+e.v||0),0); if(v) p.push(`${v>0?"+":""}${v} ${c.n}`); }); if(hasB("sof")) p.push(`+2 ${BOOSTS.sof.n}`); if(coverV()) p.push(`+${coverV()} ${COVER[S.cover].n}`); if(S.cover==="total") p.push("· Total cover: can't be targeted directly"); return p.join(" "); }
+function spSrc(){ return speedCond()?"cond":hasteOn()?"haste":S.song.on?"song":""; }
+function acSrc(){ return shieldOn()?"shield":hasteOn()?"haste":S.song.on?"song":""; }
+function acParts(){ const p=[`${C.baseAC} base${!eq("leather")?" (no armor)":amf()?" (armor +1 off)":""}`]; if(S.song.on) p.push(`+${INT} Bladesong`); if(hasteOn()) p.push("+2 Haste"); if(shieldOn()) p.push("+5 Shield"); cfxOn().forEach(c=>{ const v=c.eff.filter(e=>e.w==="ac").reduce((x,e)=>x+(e.k==="pen"?-1:e.k==="bon"?1:0)*Math.abs(+e.v||0),0); if(v) p.push(`${v>0?"+":""}${v} ${c.n}`); }); if(hasB("sof")) p.push(`+2 ${BOOSTS.sof.n}`); if(coverV()) p.push(`+${coverV()} ${COVER[S.cover].n}`); if(S.cover==="total") p.push("· Total cover: can't be targeted directly"); return p.join(" "); }
 function castShieldReaction(){
   if(S.reaction){ toastMsg("Reaction already used this round"); return; }
   if(!SL().some(l=>slotsLeft(l)>0)){ toastMsg("No spell slots left"); return; }
@@ -2465,16 +2485,16 @@ const SPNOTE={
   "Shield":"First choice: when +5 AC turns the hit into a miss"};
 function renderTurn(){
   const t=S.turn, first=S.round===1, song=S.song.on, as=atkStat();
-  const rb=as+C.prof+1, rd=rapD();
-  const cf=!!S.cantFirst, R1=`Rapier ${sgn(rb)} · ${rd}`;
-  const swapBtn=id=>`<button type="button" class="ordsw" id="${id}" aria-label="Swap attack order: now ${cf?"cantrip":"Rapier"} first" title="Swap order"><span class="ordic" aria-hidden="true">⇅</span><small>Swap</small></button>`;
+  const rb=rb0(), rd=rapD(), W=WN(), AM=amf();
+  const cf=!!S.cantFirst, R1=`${W} ${sgn(rb)} · ${rd}`;
+  const swapBtn=id=>`<button type="button" class="ordsw" id="${id}" aria-label="Swap attack order: now ${cf?"cantrip":W} first" title="Swap order"><span class="ordic" aria-hidden="true">⇅</span><small>Swap</small></button>`;
   const steps=(n,dmg,use)=>`<span class="steps"><span class="st ${cf?"st2":""}"><em>1</em>${cf?n:R1}</span><span class="st ${cf?"":"st2"}"><em>2</em>${cf?R1:n}</span></span><span class="stuse">${use}</span>`;
   const opt=(id,title,sub,dis,src="",note="")=>{ const ch=choiceOf(id); if(ch){ dis=false; sub="✓ Chosen · tap again to undo"; note=""; } if(!note&&OPTNOTE[id]&&!ch) note=OPTNOTE[id]; return `<button class="opt src-${src} ${dis?"dis":""} ${ch?"chosen":""}" id="${id}" ${dis?'aria-disabled="true"':""} data-tip="${esc(tipTxt(id))}"><b>${title}${["oBB","oGFB","oHR","rOA"].includes(id)?" "+rollCue("attack"):""}</b><span>${sub}</span>${note?`<em class="cnote ${id==="oBB"?"plan":""}">${note}</em>`:""}</button>`; };
   const hasL=min=>SL().some(l=>l>=min&&slotsLeft(l)>0);
   const eco=(k,lbl)=>`<button type="button" class="eco ${t[k]?"used":""}" data-eco="${k}" aria-pressed="${!!t[k]}" title="${t[k]?"Used · tap to undo":"Tap to mark used"}">${lbl}</button>`;
   const hasteConc=S.conc&&S.conc.name==="Haste";
-  const spOpt=(sp,k)=>{ const ty=spTy(sp), ch=choiceOf(`sp:${sp.n}:${k}`); let noSlot=sp.l>0&&!hasL(sp.l), used=k==="r"?S.reaction:t[k], oneSlot=ONE_SLOT_RULE&&sp.l>0&&S.round&&S.phase==="mine"&&t.slot&&!sp.r; if(ch){ noSlot=false; used=false; oneSlot=false; }
-    const sub=ch?"✓ Chosen · tap again to undo":[oneSlot?"slot already used this turn":"",`${ORD[sp.l]}`,sp.c?(hasteConc?"Conc · ends Haste":"Conc"):"",sp.save?`${sp.save} save DC ${C.spellDC}`:"",sp.atk?`+${C.spellAtk}`:"",noSlot?"no slots":""].filter(Boolean).join(" · ");
+  const spOpt=(sp,k)=>{ const ty=spTy(sp), ch=choiceOf(`sp:${sp.n}:${k}`); let noSlot=sp.l>0&&!hasL(sp.l), used=k==="r"?S.reaction:t[k], oneSlot=ONE_SLOT_RULE&&sp.l>0&&S.round&&S.phase==="mine"&&t.slot&&!sp.r; if(ch){ noSlot=false; used=false; oneSlot=false; } if(amf()&&!ch) noSlot=true;
+    const sub=ch?"✓ Chosen · tap again to undo":[oneSlot?"slot already used this turn":"",`${ORD[sp.l]}`,sp.c?(hasteConc?"Conc · ends Haste":"Conc"):"",sp.save?`${sp.save} save DC ${C.spellDC}`:"",sp.atk?`+${C.spellAtk}`:"",noSlot?(amf()?"antimagic":"no slots"):""].filter(Boolean).join(" · ");
     const nt=!ch&&SPNOTE[sp.n]?`<em class="cnote">${SPNOTE[sp.n]}</em>`:"";
     return `<button class="opt spopt ty-${ty} ${used||noSlot||oneSlot?"dis":""} ${ch?"chosen":""} ${sp.c&&hasteConc?"warn":""}" data-tsp="${esc(sp.n)}" data-k="${k}" ${used||noSlot?'aria-disabled="true"':""} data-tip="${esc(sp.x)}"><b>${esc(sp.n)}${sp.atk?" "+rollCue("attack"):""}</b><span>${sub}</span>${nt}</button>`; };
   const TYORD=["off","ctrl","def","move","util"];
@@ -2502,26 +2522,26 @@ function renderTurn(){
        <div class="row mvbtns"><button class="btn pri" data-mv="stand" ${left>=Math.floor(sp0/2)?"":"disabled"}>Stand up −${Math.floor(sp0/2)} ft</button>${[5,10].map(n=>`<button class="btn sm" data-mv="crawl${n}" ${left<2*n?"disabled":""}>Crawl ${n} ft (−${2*n})</button>`).join("")}<button class="btn sm" data-mv="reset" ${mv?"":"disabled"} aria-label="Reset movement">↺</button></div>${left<Math.floor(sp0/2)?`<span class="small" style="color:var(--warn)">Not enough movement left to stand (need ${Math.floor(sp0/2)} ft, ${left} left). Already moved ${mv} ft this turn; tap ↺ if that's a mistake. Otherwise you stand up next turn.</span>`:""}</div>`
      :budget?`<div class="row mvbtns">${[5,10,15,30].map(n=>`<button class="btn sm" data-mv="${n}" ${left<n?"disabled":""}>−${n}</button>`).join("")}<button class="btn sm" data-mv="all" ${left?"":"disabled"}>All</button><button class="btn sm" data-mv="reset" ${mv?"":"disabled"} aria-label="Reset movement">↺</button></div>`:`<p class="small muted" style="margin:0">Speed 0${sc?` (${sc})`:""}: you can't move this turn.</p>`}</div>`;
   const base=`${incBanner}<div class="baseframe ${wait||inc?"waiting":(S.round?"live":"")}" ${wait||inc?"inert":""}>
-     <div class="card-h"><h2>${wait?"My turn · waiting":"My turn"}</h2><div class="row">${eco("a","Action")}${eco("ba","Bonus")}${S.haste?eco("h","Haste"):""}<button type="button" class="eco ${S.reaction?"used":""}" data-eco="r" aria-pressed="${!!S.reaction}" title="${S.reaction?"Used · tap to undo":"Tap to mark used"}">Reaction</button></div></div>
+     <div class="card-h"><h2>${wait?"My turn · waiting":"My turn"}</h2><div class="row">${eco("a","Action")}${eco("ba","Bonus")}${hasteOn()?eco("h","Haste"):""}<button type="button" class="eco ${S.reaction?"used":""}" data-eco="r" aria-pressed="${!!S.reaction}" title="${S.reaction?"Used · tap to undo":"Tap to mark used"}">Reaction</button></div></div>
      ${mvRow}
      <div class="tgrid">
        <div class="tcol"><div class="label">Bonus Action</div>
          ${song?"":opt("oSong","Bladesong",S.song.used>=S.song.max?"No uses left":`Start here · ${S.song.max-S.song.used}/${S.song.max} uses · AC ${C.baseAC+INT}`,t.ba||S.song.used>=S.song.max,"song")}
-         ${!prepN("Misty Step")?"":opt("oMisty","Misty Step","Teleport 30 ft",t.ba||!hasL(2))}
-         ${!prepN("Arcane Vigor")?"":opt("oVigor","Arcane Vigor",`Heal 2d6+5 · ${S.hd} HD left`,t.ba||!S.hd||!hasL(2))}
+         ${!prepN("Misty Step")?"":opt("oMisty","Misty Step",AM?"Antimagic: no spells":"Teleport 30 ft",t.ba||!hasL(2)||AM)}
+         ${!prepN("Arcane Vigor")?"":opt("oVigor","Arcane Vigor",AM?"Antimagic: no spells":`Heal 2d6+5 · ${S.hd} HD left`,t.ba||!S.hd||!hasL(2)||AM)}
          ${song?`<button class="opt src-song active" id="oSongOff" aria-label="Bladesong is on, tap to end"><b>Bladesong ✦</b><span>${choiceOf("oSongOff")?"✓ Just started · tap again to undo":`${S.song.max-S.song.used}/${S.song.max} left · tap to end`}</span></button>`:""}
 </div>
        <div class="tcol"><div class="label">Action</div>
-         ${S.conc&&S.conc.name==="Haste"||!prepN("Haste")?"":opt("oHaste","Haste on yourself",hasL(3)?"Start here · 3rd slot · Concentration · AC +2, Speed ×2, extra action":"No 3rd+ slots left",t.a||!hasL(3),"haste")}
-         ${t.combo&&COMBO_N[t.combo]?`<div class="nextwrap"><button class="opt src-${t.combo} nextatk" id="oNext"><b>2/2 · ${COMBO_N[t.combo]} ${rollCue("attack")}</b><span>Rapier ${sgn(rb)} · +2d8 ${t.combo==="bb"?"thunder":"fire"} · tap to cast</span></button><button class="btn sm nextskip" id="oNextSkip">Skip</button></div>`:""}
-         <div class="ordwrap ${t.a?"":"on"}">${opt("oBB",cf?"Booming Blade → Rapier":"Rapier → Booming Blade",steps("Booming Blade","+2d8 thunder","Single target · boss fight"),t.a,"bb")}${t.a?"":swapBtn("oOrdBB")}</div>
-         <div class="ordwrap ${t.a?"":"on"}">${opt("oGFB",cf?"Green-Flame Blade → Rapier":"Rapier → Green-Flame Blade",steps("Green-Flame Blade","+2d8 fire, then leaps","Several targets · enemy unlikely to move"),t.a,"gfb")}${t.a?"":swapBtn("oOrdGFB")}</div>
+         ${S.conc&&S.conc.name==="Haste"||!prepN("Haste")?"":opt("oHaste","Haste on yourself",AM?"Antimagic: no spells":hasL(3)?"Start here · 3rd slot · Concentration · AC +2, Speed ×2, extra action":"No 3rd+ slots left",t.a||!hasL(3)||AM,"haste")}
+         ${t.combo&&COMBO_N[t.combo]?`<div class="nextwrap"><button class="opt src-${t.combo} nextatk" id="oNext"><b>2/2 · ${COMBO_N[t.combo]} ${rollCue("attack")}</b><span>${W} ${sgn(rb)} · +2d8 ${t.combo==="bb"?"thunder":"fire"} · tap to cast</span></button><button class="btn sm nextskip" id="oNextSkip">Skip</button></div>`:""}
+         <div class="ordwrap ${t.a||AM?"":"on"}">${opt("oBB",cf?"Booming Blade → "+W:W+" → Booming Blade",steps("Booming Blade","+2d8 thunder",AM?"Antimagic: no cantrips":"Single target · boss fight"),t.a||AM,"bb")}${t.a||AM?"":swapBtn("oOrdBB")}</div>
+         <div class="ordwrap ${t.a||AM?"":"on"}">${opt("oGFB",cf?"Green-Flame Blade → "+W:W+" → Green-Flame Blade",steps("Green-Flame Blade","+2d8 fire, then leaps",AM?"Antimagic: no cantrips":"Several targets · enemy unlikely to move"),t.a||AM,"gfb")}${t.a||AM?"":swapBtn("oOrdGFB")}</div>
          ${rider}
          ${S.absorb&&S.absorb.phase==="ready"&&S.phase==="mine"?`<div class="rider src-ae"><span class="small"><b>Absorb Elements</b> · your first melee hit this turn adds ${S.absorb.n}d6 ${S.absorb.type}</span><button class="btn sm" id="rdAE">Roll ${S.absorb.n}d6 ${S.absorb.type}</button><button class="btn sm" id="rdAEX" aria-label="Dismiss">✕</button></div>`:""}
-         ${opt("oSpellA","Cast a spell","Magic action · prepared spells below ↓",t.a)}
-         ${opt("oAlt","Other action",S.haste?"Disengage · Dodge · Dagger":"Dash · Disengage · Dodge · Dagger",t.a)}
+         ${opt("oSpellA","Cast a spell",AM?"Antimagic: no spells":"Magic action · prepared spells below ↓",t.a||AM)}
+         ${opt("oAlt","Other action",hasteOn()?"Disengage · Dodge · Dagger":"Dash · Disengage · Dodge · Dagger",t.a)}
          ${S.conc&&S.conc.name==="Haste"?`<button class="opt src-haste active" id="oHasteOff" aria-label="Haste is on, tap to drop"><b>Haste ✦</b><span>${choiceOf("oHasteOff")?"✓ Just cast · tap again to undo":"Concentrating · tap to drop"}</span></button>`:""}</div>
-       ${S.haste?`<div class="tcol"><div class="label">Haste action</div>${opt("oHBB","Booming Blade",`${sgn(rb)} · Rapier + 2d8 thunder`,t.h,"bb")}${opt("oHGFB","Green-Flame Blade",`${sgn(rb)} · Rapier + 2d8 fire`,t.h,"gfb")}${opt("oHR","Rapier +1",`${sgn(rb)} · ${rd}`,t.h,"haste")}${opt("oHD","Dash or Disengage","",t.h,"haste")}</div>`:""}
+       ${hasteOn()?`<div class="tcol"><div class="label">Haste action</div>${opt("oHBB","Booming Blade",`${sgn(rb)} · ${W} + 2d8 thunder`,t.h,"bb")}${opt("oHGFB","Green-Flame Blade",`${sgn(rb)} · ${W} + 2d8 fire`,t.h,"gfb")}${opt("oHR",W+(wPlus()?" +1":""),`${sgn(rb)} · ${rd}`,t.h,"haste")}${opt("oHD","Dash or Disengage","",t.h,"haste")}</div>`:""}
      </div>${spSec("ba","Bonus action spells")}${spSec("a","Action spells · prepared")}${S.round&&!wait?`<button class="btn bad-solid endturn" id="tNext2">End my turn ■</button>`:""}</div>`;
   const R=S.reaction, anySlot=hasL(1);
   const lockR=!inc&&wait&&R;
@@ -2533,13 +2553,13 @@ function renderTurn(){
        ${S.shield?`<button class="opt src-shield active" id="rShieldOff"><b>Shield ✦ up</b><span>+5 AC until your turn starts</span></button>`
          :!prepN("Shield")?"":opt("rShield","Shield","Smaller hits · tap to cast · AC → "+(cur+5),R||!anySlot,"shield")}
        ${opt("rSong","Song of Defense",song?"Big hits · slot level × 5 off the damage":"Needs Bladesong active",R||!song||!anySlot,"song")}
-       ${!prepN("Counterspell")?"":opt("rCounter","Counterspell","Enemy casts within 60 ft · 3rd slot",R||!hasL(3),"cspell")}
-       ${S.readied?`<button class="opt src-atk active" id="rReady"><b>Readied: ${S.readied.k==="atk"?"Rapier attack":"spell"} ✦</b><span>${S.readied.trig?`When ${esc(S.readied.trig)} · `:""}tap when it happens · uses your Reaction</span></button>`:""}
-       ${opt("rOA","Opportunity attack",`Enemy leaves your reach · Rapier ${sgn(rb)} · Booming Blade · or a spell (War Caster)`,R)}
+       ${!prepN("Counterspell")?"":opt("rCounter","Counterspell",AM?"Antimagic: no spells":"Enemy casts within 60 ft · 3rd slot",R||!hasL(3)||AM,"cspell")}
+       ${S.readied?`<button class="opt src-atk active" id="rReady"><b>Readied: ${S.readied.k==="atk"?W+" attack":"spell"} ✦</b><span>${S.readied.trig?`When ${esc(S.readied.trig)} · `:""}tap when it happens · uses your Reaction</span></button>`:""}
+       ${opt("rOA","Opportunity attack",`Enemy leaves your reach · ${W} ${sgn(rb)}${AM?"":" · Booming Blade · or a spell (War Caster)"}`,R)}
        ${combatSpells("r").map(sp=>spOpt(sp,"r")).join("")}
        ${S.conc?opt("rMS","Mind Sharpener",`Failed concentration save · ${msAvailable().map(k=>S.charges[k]).reduce((x,y)=>x+y,0)} charges`,R||!msAvailable().length,"haste"):""}
      </div>
-     ${S.haste?`<p class="small src-haste" style="margin:0;color:var(--src)">If Haste drops: Incapacitated and Speed 0 until the end of your next turn.</p>`:""}
+     ${hasteOn()?`<p class="small src-haste" style="margin:0;color:var(--src)">If Haste drops: Incapacitated and Speed 0 until the end of your next turn.</p>`:""}
    </div>`;
   const head = S.round
     ? `<div class="card-h"><div class="row"><span class="label">Round ${S.round}</span>${diceToggle()}</div><div class="row turnbtns">${S.phase==="theirs"?`<button class="btn pri" id="tNext" title="Reaction comes back, Shield ends, actions reset">My turn starts ▶</button>`:""}</div></div>`
@@ -2559,13 +2579,15 @@ function wireTurn(){
   document.querySelectorAll("[data-eco]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("used")&&undoChoice(b.dataset.eco)) return; const k=b.dataset.eco, nm={a:"Action",ba:"Bonus Action",h:"Haste action",r:"Reaction"}[k]; let on; if(k==="r"){ S.reaction=!S.reaction; on=S.reaction; } else { S.turn[k]=!S.turn[k]; on=S.turn[k]; } ev({k:"note",label:`${nm} ${on?"marked used":"undone"} (manual)`}); persist(); render(); toastMsg(`${nm} ${on?"marked as used":"is available again"}`); });
   document.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{ if(COL.res){ COL.res=false; saveCol(); render(); } const g=document.querySelector(".csgrid"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"}); }); on("tNext",turnBtn); on("tNext2",turnBtn); on("tNext3",turnBtn); on("tRollInit",()=>document.getElementById("vInit").click()); on("tRollInit2",()=>document.getElementById("vInit").click()); on("tEnd",endCombat); on("rShield",castShieldReaction); on("rAtk",attackedFlow);
   const rt=q("rToggle"); if(rt) rt.onclick=()=>{ S.reaction=!S.reaction; persist(); render(); };
+  on("bAmf",()=>{ S.amf=true; applyChar(); persist(); render(); toastMsg("Antimagic on: no spells, magic items off"); });
+  on("bAmfOff",()=>{ S.amf=false; applyChar(); persist(); render(); toastMsg("Antimagic off: magic is back"); });
   on("rShieldOff",()=>{ S.shield=false; persist(); render(); });
   on("rSong",()=>sodModal());
   on("rCounter",()=>castSpell(SPELLS.find(x=>x.n==="Counterspell")));
   on("rReady",async()=>{ const R0=S.readied; if(!R0) return; if(S.reaction){ toastMsg("Your Reaction is already used"); return; } S.readied=null; S.reaction=true; persist(); render();
-    if(R0.k==="atk") await attack("Rapier (readied)",rb0(),rapD(),"piercing"); else { ev({k:"note",label:"Readied spell released"}); persist(); render(); toastMsg("Spell released. Concentration on it can end now"); } });
+    if(R0.k==="atk") await attack(WN()+" (readied)",rb0(),rapD(),"piercing"); else { ev({k:"note",label:"Readied spell released"}); persist(); render(); toastMsg("Spell released. Concentration on it can end now"); } });
   on("rOA",()=>{ openModal(`<h3>Opportunity attack</h3><p class="small">The enemy left your reach. Uses your Reaction. With War Caster you can cast a 1-action spell at it instead of the Rapier attack; the spell must target only that creature (so all Scorching Ray rays go at it).</p>
-     <div class="row"><button class="btn pri" id="rvRap">Rapier ${sgn(rb)}</button><button class="btn pri src-bb" id="rvBB">Booming Blade (Rapier)</button>${OA_SPELLS.map(n=>SPELLS.find(x=>x.n===n)).filter(sp=>sp&&isPrepared(sp)).map(sp=>`<button class="btn" data-oasp="${esc(sp.n)}" ${SL().some(l=>l>=sp.l&&slotsLeft(l)>0)?"":"disabled"}>${esc(sp.n)}<br><span class="small">${ORD[sp.l]}${sp.save?` · ${sp.save} DC ${C.spellDC}`:sp.atk?` · +${C.spellAtk}`:""}</span></button>`).join("")}</div>
+     <div class="row"><button class="btn pri" id="rvRap">${WN()} ${sgn(rb)}</button>${amf()?"":`<button class="btn pri src-bb" id="rvBB">Booming Blade (${WN()})</button>`}${OA_SPELLS.map(n=>SPELLS.find(x=>x.n===n)).filter(sp=>sp&&isPrepared(sp)).map(sp=>`<button class="btn" data-oasp="${esc(sp.n)}" ${SL().some(l=>l>=sp.l&&slotsLeft(l)>0)?"":"disabled"}>${esc(sp.n)}<br><span class="small">${ORD[sp.l]}${sp.save?` · ${sp.save} DC ${C.spellDC}`:sp.atk?` · +${C.spellAtk}`:""}</span></button>`).join("")}</div>
      <p class="small muted" style="margin:0">Green-Flame Blade doesn't qualify (its flame can hit a second creature).</p>
      <div class="row"><button class="btn" data-close="1">Cancel</button></div>`);
      document.querySelectorAll("[data-oasp]").forEach(b=>b.onclick=()=>{ closeModal(); castSpell(SPELLS.find(x=>x.n===b.dataset.oasp),()=>{S.reaction=true;}); });
@@ -2580,7 +2602,7 @@ function wireTurn(){
   on("oSpell",()=>{ spend("a"); document.querySelector('#tabs [data-tab="spells"]').click(); });
   on("oMisty",()=>{ castSpell(SPELLS.find(s=>s.n==="Misty Step"),()=>{S.turn.ba=true;}); });
   on("oVigor",()=>{ castSpell(SPELLS.find(s=>s.n==="Arcane Vigor"),()=>{S.turn.ba=true;}); });
-  const as=atkStat(), rb=as+C.prof+1, rd=rapD();
+  const as=atkStat(), rb=rb0(), rd=rapD();
   const COMBO={bb:["Booming Blade","piercing + thunder"],gfb:["Green-Flame Blade","piercing + fire"]};
   on("oBB",async()=>{ S.rider="bb"; S.riderEvi=null; S.bbTarget=""; spend("a"); const r=await bladeCombo("Booming Blade","2d8","piercing + thunder"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
   on("oGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("a"); const r=await bladeCombo("Green-Flame Blade","2d8","piercing + fire"); if(r) armRider(r); else { S.rider=null; persist(); render(); } });
@@ -2610,10 +2632,10 @@ function wireTurn(){
   on("rdX",()=>{ S.rider=null; persist(); render(); });
   on("rdAE",()=>{ const a=S.absorb; S.absorb=null; persist(); render(); const lb="Absorb Elements (first melee hit)"; rollDmg(lb,`${a.n}d6`).then(d=>logRoll(lb,d.total,d.detail+" "+a.type,"",null,"damage")); });
   on("rdAEX",()=>{ S.absorb=null; persist(); render(); });
-  on("oHR",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
+  on("oHR",()=>{ spend("h"); attack(WN()+" (Haste)",rb,rd,"piercing"); });
   on("oHBB",async()=>{ S.rider="bb"; S.riderEvi=null; S.bbTarget=""; spend("h"); const a=await attack("Booming Blade (Haste)",rb0(),rapD()+"+2d8","piercing + thunder"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
   on("oHGFB",async()=>{ S.rider="gfb"; S.riderEvi=null; spend("h"); const a=await attack("Green-Flame Blade (Haste)",rb0(),rapD()+"+2d8","piercing + fire"); if(a&&a.hit!==false) armRider(); else { S.rider=null; persist(); render(); } });
-  on("oHR1",()=>{ spend("h"); attack("Rapier (Haste)",rb,rd,"piercing"); });
+  on("oHR1",()=>{ spend("h"); attack(WN()+" (Haste)",rb,rd,"piercing"); });
   on("oHD",()=>{ openModal(`<h3>Haste action</h3><div class="row"><button class="btn pri" id="hdDash">Dash (+${speed()} ft)</button><button class="btn" id="hdDis">Disengage</button><button class="btn" data-close="1">Cancel</button></div>`);
     document.getElementById("hdDash").onclick=()=>{ closeModal(); S.turn.dash=(S.turn.dash||0)+1; spend("h"); };
     document.getElementById("hdDis").onclick=()=>{ closeModal(); spend("h"); toastMsg("Disengage"); }; });
@@ -2663,7 +2685,7 @@ function concMenu(){
 function renderCombat(){
   const p=Math.max(0,S.hp/C.maxHp*100);
   const as=atkStat(), song=S.song.on;
-  const rap={b:as+C.prof+1, d:rapD()}, dag={b:as+C.prof, d:`1d4+${as}`};
+  const rap={b:rb0(), d:rapD()}, dag={b:as+C.prof, d:`1d4+${as}`};
   const ms=["ms1"].filter(k=>S.attuned[k]);
   const concStrip = S.conc ? `<div class="card span2 concstrip"><div class="row" style="justify-content:space-between">
       <div><span class="label">Concentrating</span> <b>${esc(S.conc.name)}</b>${S.conc.tgt?` <span class="conctgt">→ ${esc(S.conc.tgt)}</span>`:""}${S.conc.lvl?` <span class="small muted">${ORD[S.conc.lvl]} level</span>`:""} <span class="small ${S.song.on?"":"muted"}" ${S.song.on?`style="color:var(--song)" title="Bladesong adds INT to concentration saves"`:""}>· save ${sgn(concMod())} with adv</span></div>
@@ -2673,7 +2695,12 @@ function renderCombat(){
       <div><span class="label">Concentration</span> <span class="small muted">none</span></div>
       <button class="btn sm" id="bConcSet">Mark concentration</button></div></div>`;
   const cs=Object.keys(S.conds||{});
-  const condRow=`<div class="row condrow">${cs.map(c=>`<button class="cchip" style="--cc:${ccol(c,S.conds[c])}" data-cond="${c}" data-tip="${esc(CONDS[c]||"")}"><b>${c}${c==="Exhaustion"?" "+exh():""}${S.conds[c]==="lethargy"?" · Haste":""}${srcOf(c)?`<span class="cdur"> ${srcWord(c)} ${esc(srcOf(c))}</span>`:""}${(S.condDur||{})[c]?`<span class="cdur"> · ${durTxt(S.condDur[c])}</span>`:""}</b> ✕</button>`).join("")}${S.cover?`<button class="cchip" style="--cc:#2f7d6d" id="bCoverChip" data-tip="${S.cover==="total"?"Can't be targeted directly by attacks or spells.":`+${coverV()} AC and DEX saves.`} Tap to change."><b>${COVER[S.cover].n}${coverV()?" +"+coverV():""}</b> ✎</button>`:""}${cfxOn().map(c=>`<button class="cchip" style="--cc:#8a6fd1" data-cfxc="${c.id}" data-tip="${esc(cfxTxt(c))} · tap to turn off or edit"><b>${esc(c.n)}</b> ✎</button>`).join("")}${Object.keys(BOOSTS).filter(hasB).map(k=>`<button class="cchip bchip" style="--cc:#3f9a5c" data-boost="${k}" data-tip="${esc(BOOSTS[k].x)} · tap to remove"><b>${BOOSTS[k].n}</b> ✕</button>`).join("")}<button class="btn sm" id="bCondAdd">+ Condition</button>${S.cover?"":`<button class="btn sm" id="bCover">+ Cover</button>`}</div>`+condHints();
+  const condRow=`<div class="row condrow">${cs.map(c=>`<button class="cchip" style="--cc:${ccol(c,S.conds[c])}" data-cond="${c}" data-tip="${esc(CONDS[c]||"")}"><b>${c}${c==="Exhaustion"?" "+exh():""}${S.conds[c]==="lethargy"?" · Haste":""}${srcOf(c)?`<span class="cdur"> ${srcWord(c)} ${esc(srcOf(c))}</span>`:""}${(S.condDur||{})[c]?`<span class="cdur"> · ${durTxt(S.condDur[c])}</span>`:""}</b> ✕</button>`).join("")}${S.cover?`<button class="cchip" style="--cc:#2f7d6d" id="bCoverChip" data-tip="${S.cover==="total"?"Can't be targeted directly by attacks or spells.":`+${coverV()} AC and DEX saves.`} Tap to change."><b>${COVER[S.cover].n}${coverV()?" +"+coverV():""}</b> ✎</button>`:""}${cfxOn().map(c=>`<button class="cchip" style="--cc:#8a6fd1" data-cfxc="${c.id}" data-tip="${esc(cfxTxt(c))} · tap to turn off or edit"><b>${esc(c.n)}</b> ✎</button>`).join("")}${Object.keys(BOOSTS).filter(hasB).map(k=>`<button class="cchip bchip" style="--cc:#3f9a5c" data-boost="${k}" data-tip="${esc(BOOSTS[k].x)} · tap to remove"><b>${BOOSTS[k].n}</b> ✕</button>`).join("")}<button class="btn sm" id="bCondAdd">+ Condition</button>${S.cover?"":`<button class="btn sm" id="bCover">+ Cover</button>`}${amf()?"":`<button class="btn sm" id="bAmf">+ Antimagic</button>`}</div>`+condHints();
+  const amfBar=(amf()?`<div class="span2 amfbar" role="status"><div class="row" style="justify-content:space-between;align-items:center"><b>Antimagic ✦ no magic here</b><button class="btn sm" id="bAmfOff">Turn off</button></div><ul class="small">
+  <li>No spells, no cantrips: Booming Blade, Green-Flame Blade, Shield, Counterspell and Absorb Elements are locked.</li>
+  <li>Magic items are plain: ${hasRapier()?"Rapier +0":"Dagger"}${eq("leather")?", Leather Armor +0 (AC −1)":""}, Mind Sharpener and Boots off.</li>
+  <li>Spells already on you are suppressed, not ended: ${S.haste?"Haste gives nothing now, but your Concentration keeps it alive. Leaving the area brings it back. ":""}${S.shield?"Shield gives nothing now. ":""}Their time still runs.</li>
+  <li>Bladesong and Song of Defense are class features, not spells, so they still work here. Check with the DM.</li></ul></div>`:"");
   const hpCard=`  <div class="card span2 hpcard">
     <div class="card-h"><h2>Hit Points</h2><span class="small muted">Hit Dice ${S.hd}/${C.level} d6</span></div>
     <div class="hpbig"><span class="cur num">${S.hp}</span><span class="muted">/ ${C.maxHp}</span>${S.temp?`<span style="color:var(--song)">+${S.temp} temp</span>`:""}</div>
@@ -2690,7 +2717,7 @@ function renderCombat(){
 `;
   const songLeft=S.song.max-S.song.used, incNow=!!incap()||S.hp===0;
   const focusBar=`<div class="span2 focusbar"><span class="small muted">Show</span><button class="btn sm ${colFocus()?"":"pri"}" id="colAll">Everything</button><button class="btn sm ${colFocus()?"pri":""}" id="colFocus">Focus: turn &amp; conditions</button>${S.round&&S.phase==="mine"?`<button class="btn sm atkbtn quiet" id="bAtk" title="Opportunity attack or readied attack during your turn">⚔ Attacked on my turn</button>`:`<button class="btn pri atkbtn" id="bAtk">⚔ I'm attacked</button>`}</div>`;
-  document.getElementById("pane-combat").innerHTML=`<div class="span2 inittop">${S.round?`<span></span><button class="initbox ${S.initNat===20?"n20":""}" id="tInit" title="${S.initNat===20?"Natural 20 · ":""}Tap to change"><span class="label">Initiative</span><b class="num">${S.init??"–"}</b></button><button class="btn bad endsq" id="tEnd">End<br>combat</button>`:`<button class="btn pri initsq" id="tRollInit"><span>Roll initiative</span><b class="num">${sgn(DEX)}</b></button>`}</div>`+focusBar+(incNow?renderTurn():colWrap(renderTurn(),"turn",`My turn${S.round?` · Round ${S.round} · ${S.phase==="mine"?"my turn":"enemies' turn"}`:""}`))+colWrap(hpCard,"hp",`HP ${S.hp}/${C.maxHp}${S.temp?` +${S.temp} temp`:""} · AC ${ac()} · saves`)+`<div class="span2 csgrid">`+colWrap(concStrip.replace(/<\/div><\/div>$/,"</div>"+condRow+"</div>"),"res",[S.conc?`Conc · ${S.conc.name}`:"No concentration",(n=>n?`${n} condition${n>1?"s":""}`:"no conditions")(Object.keys(S.conds||{}).filter(k=>S.conds[k]).length+(S.cover?1:0))].join(" · "))+colWrap(resCard,"res",`Slots ${SL().map(l=>slotsLeft(l)).join("·")}`)+`</div>`+`
+  document.getElementById("pane-combat").innerHTML=`<div class="span2 inittop">${S.round?`<span></span><button class="initbox ${S.initNat===20?"n20":""}" id="tInit" title="${S.initNat===20?"Natural 20 · ":""}Tap to change"><span class="label">Initiative</span><b class="num">${S.init??"–"}</b></button><button class="btn bad endsq" id="tEnd">End<br>combat</button>`:`<button class="btn pri initsq" id="tRollInit"><span>Roll initiative</span><b class="num">${sgn(DEX)}</b></button>`}</div>`+focusBar+(incNow?renderTurn():colWrap(renderTurn(),"turn",`My turn${S.round?` · Round ${S.round} · ${S.phase==="mine"?"my turn":"enemies' turn"}`:""}`))+colWrap(hpCard,"hp",`HP ${S.hp}/${C.maxHp}${S.temp?` +${S.temp} temp`:""} · AC ${ac()} · saves`)+amfBar+`<div class="span2 csgrid">`+colWrap(concStrip.replace(/<\/div><\/div>$/,"</div>"+condRow+"</div>"),"res",[S.conc?`Conc · ${S.conc.name}`:"No concentration",(n=>n?`${n} condition${n>1?"s":""}`:"no conditions")(Object.keys(S.conds||{}).filter(k=>S.conds[k]).length+(S.cover?1:0))].join(" · "))+colWrap(resCard,"res",`Slots ${SL().map(l=>slotsLeft(l)).join("·")}`)+`</div>`+`
 
 
 
@@ -3000,7 +3027,7 @@ function renderSpells(){
 
 function renderChecks(){
   const sk=C.skills.map(([n,a,p])=>{ const bonus=mod(C.abil[a])+(p?C.prof*p:0); let auto=0, why="";
-    if(n==="Stealth"){auto=1;why="Boots";} if(n==="Acrobatics"&&S.song.on){auto=1;why="Song";}
+    if(n==="Stealth"&&eq("boots")&&!amf()){auto=1;why="Boots";} if(n==="Acrobatics"&&S.song.on){auto=1;why="Song";}
     return `<div class="li"><span><span class="prof ${p===2?"e":p?"p":""}"></span>${n} <span class="small muted">${a}</span>${auto?`<span class="adv">ADV · ${why}</span>`:""} ${rollCue(n)}</span><b class="num">${sgn(bonus)}</b><button class="btn sm" data-sk="${n}" data-b="${bonus}" data-a="${auto}">Roll</button></div>`;}).join("");
   const sv=Object.keys(C.abil).map(a=>{ const b=mod(C.abil[a])+(C.saveProf.includes(a)?C.prof:0)+(C.saveBonus||0);
     return `<div class="ab sv ${C.saveProf.includes(a)?"svp":""}"><span class="label"><span class="prof ${C.saveProf.includes(a)?"p":""}"></span>${a}</span><b class="num">${sgn(b)}</b>${rollCue(a+" save",0,true)}<button class="btn" data-sv="${a}" data-b="${b}">Roll</button></div>`;}).join("");
@@ -3035,8 +3062,8 @@ function renderGear(){
   document.getElementById("pane-gear").innerHTML=`
    <div class="card span2">
      <div class="card-h"><h2>Magic items</h2><div class="row"><span class="small ${n>3?"no":"muted"}">Attuned ${n}/3</span><button class="btn pri sm" id="addItem">+ Add item</button></div></div>
-     ${ITEMS.map(it=>`<div class="item"><div class="ih">${itemIcon(it)}<span class="in">${esc(it.n)}</span>
-       ${it.att?`<button class="attbtn ${S.attuned[it.id]?"on":""}" data-att="${it.id}" aria-pressed="${!!S.attuned[it.id]}">${S.attuned[it.id]?"◆ Attuned":"◇ Attune"}</button>`:""}</div>
+     ${ITEMS.map(it=>`<div class="item ${eq(it.id)?"":"off"}"><div class="ih">${itemIcon(it)}<span class="in">${esc(it.n)}</span>
+       ${it.att?`<button class="attbtn ${S.attuned[it.id]?"on":""}" data-att="${it.id}" aria-pressed="${!!S.attuned[it.id]}">${S.attuned[it.id]?"◆ Attuned":"◇ Attune"}</button>`:""}<button type="button" class="eqbox" data-eq="${it.id}" aria-pressed="${eq(it.id)}" aria-label="${esc(it.n)}: ${eq(it.id)?"on me":"not on me"}" title="${eq(it.id)?"On me · tap if it's not":"Not on me · tap when it's back"}"></button></div>
        <div class="small">${esc(it.x)}</div>
        ${(it.fx||[]).length?`<div class="small fxline">${it.fx.map(f=>`${sgn(f.v)} ${FX[f.k]}`).join(" · ")}${it.att&&!S.attuned[it.id]?" (when attuned)":""}</div>`:""}
        ${it.charges?`<div class="row"><span class="label">Charges</span><div class="pips">${Array.from({length:it.charges},(_,i)=>i).map(i=>`<button class="pip sq ${i<(S.charges[it.id]??it.charges)?"":"spent"}" data-ch="${it.id}" data-i="${i}" aria-label="charge ${i+1}"></button>`).join("")}</div>${it.custom?`<span class="small muted">${it.rw&&it.rw!=="none"?`Regains ${esc(it.ra||"all")} on ${it.rw==="short"?"a Short or Long Rest":it.rw==="dawn"?"dawn (Long Rest)":"a Long Rest"}`:""}</span>`:`<button class="btn sm" data-dawn="${it.id}">Dawn: +1d4</button>`}</div>`:""}
@@ -3057,6 +3084,7 @@ function renderGear(){
   document.querySelectorAll("[data-att]").forEach(b=>b.onclick=()=>{ const k=b.dataset.att;
     if(!S.attuned[k] && attunedCount()>=3){ toastMsg("All 3 attunement slots are full. End one first."); return; }
     S.attuned[k]=!S.attuned[k]; persist(); render(); });
+  document.querySelectorAll("[data-eq]").forEach(b=>b.onclick=()=>{ const k=b.dataset.eq; S.offItems=S.offItems||{}; if(S.offItems[k]) delete S.offItems[k]; else S.offItems[k]=true; applyChar(); persist(); render(); const it=ITEMS.find(x=>x.id===k); toastMsg(`${it?it.n.split(",")[0]:"Item"}: ${eq(k)?"on you again":"not on you"}${k==="rapier"&&!eq(k)?" · attacks use the dagger":""}`); });
   document.querySelectorAll("[data-unatt]").forEach(b=>b.onclick=()=>{ S.attuned[b.dataset.unatt]=false; persist(); render(); });
   document.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{const k=b.dataset.ch,i=+b.dataset.i, mx=(ITEMS.find(x=>x.id===k)||{charges:4}).charges; S.charges[k]=Math.max(0,Math.min(mx,(S.charges[k]??mx)+(i<(S.charges[k]??mx)?-1:1))); persist(); render();});
   document.getElementById("addItem").onclick=()=>itemForm(null);
