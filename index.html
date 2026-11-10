@@ -616,6 +616,8 @@ details.spell>summary .qcast{margin-left:auto;flex:none;padding:4px 14px;min-hei
 details.spell.flash{outline:2px solid var(--gold,#d9b46a);outline-offset:3px;border-radius:8px;transition:outline-color 1.4s}
 .initbox.n20{border-color:var(--good)!important;box-shadow:0 0 0 1px var(--good),0 0 14px color-mix(in srgb,var(--good) 45%,transparent)}
 .initbox.n20 b,.initbox.n20 .label{color:var(--good)!important}
+.initbox.n1{border-color:var(--bad)!important;box-shadow:0 0 0 1px var(--bad),0 0 14px color-mix(in srgb,var(--bad) 45%,transparent)}
+.initbox.n1 b,.initbox.n1 .label{color:var(--bad)!important}
 .akmiss{flex:1}
 #pane-checks .svgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #pane-checks .ab.sv .label{display:inline-flex;align-items:center;gap:5px}
@@ -906,6 +908,7 @@ html[data-look="day"] header.top{background:rgba(236,223,194,.96);box-shadow:0 1
 html[data-look="day"] .card,html[data-look="day"] .lvlblock,html[data-look="day"] .sheet,html[data-look="day"] .rpanel{background:var(--surface);border-color:var(--line);box-shadow:0 2px 10px rgba(90,60,20,.12)}
 html[data-look="day"] .rbig,html[data-look="day"] .dvt,html[data-look="day"] .dmglab b,html[data-look="day"] .dmgsum b,html[data-look="day"] .msum .rbig{color:var(--ink)!important;text-shadow:none!important}
 html[data-look="day"] .atkdmg.lit .rbig,html[data-look="day"] .mdmg.lit .rbig,html[data-look="day"] .mdres .rbig,html[data-look="day"] .msum.lit .rbig{color:var(--accent)!important;text-shadow:none!important}
+html[data-look="day"] .rbig.nat20{color:var(--good)!important}html[data-look="day"] .rbig.nat1{color:var(--bad)!important}
 html[data-look="day"] svg.dval text,html[data-look="day"] svg.dnum text{fill:var(--ink)!important}
 html[data-look="day"] .d20viz .dterm.ally>b,html[data-look="day"] .d20viz .dterm.ally small{color:#1f5f9e}
 html[data-look="day"] .d20viz .dterm.pen>b,html[data-look="day"] .d20viz .dterm.pen small{color:#b3362b}
@@ -1031,7 +1034,7 @@ body.bladesong .hpips .pip.spent::before,body.bladesong .hpips .pip.spent::after
   <section class="pane" id="pane-notes" hidden></section>
   <section class="pane" id="pane-traits" hidden></section>
 </main>
-<footer class="verfoot"><span class="sync" title="Page version">v43.91</span></footer>
+<footer class="verfoot"><span class="sync" title="Page version">v43.92</span></footer>
 <div id="modal"></div>
 <div id="toast"></div>
 <div id="result"></div>
@@ -2717,7 +2720,7 @@ function renderCombat(){
 `;
   const songLeft=S.song.max-S.song.used, incNow=!!incap()||S.hp===0;
   const focusBar=`<div class="span2 focusbar"><span class="small muted">Show</span><button class="btn sm ${colFocus()?"":"pri"}" id="colAll">Everything</button><button class="btn sm ${colFocus()?"pri":""}" id="colFocus">Focus: turn &amp; conditions</button>${S.round&&S.phase==="mine"?`<button class="btn sm atkbtn quiet" id="bAtk" title="Opportunity attack or readied attack during your turn">⚔ Attacked on my turn</button>`:`<button class="btn pri atkbtn" id="bAtk">⚔ I'm attacked</button>`}</div>`;
-  document.getElementById("pane-combat").innerHTML=`<div class="span2 inittop">${S.round?`<span></span><button class="initbox ${S.initNat===20?"n20":""}" id="tInit" title="${S.initNat===20?"Natural 20 · ":""}Tap to change"><span class="label">Initiative</span><b class="num">${S.init??"–"}</b></button><button class="btn bad endsq" id="tEnd">End<br>combat</button>`:`<button class="btn pri initsq" id="tRollInit"><span>Roll initiative</span><b class="num">${sgn(DEX)}</b></button>`}</div>`+focusBar+(incNow?renderTurn():colWrap(renderTurn(),"turn",`My turn${S.round?` · Round ${S.round} · ${S.phase==="mine"?"my turn":"enemies' turn"}`:""}`))+colWrap(hpCard,"hp",`HP ${S.hp}/${C.maxHp}${S.temp?` +${S.temp} temp`:""} · AC ${ac()} · saves`)+amfBar+`<div class="span2 csgrid">`+colWrap(concStrip.replace(/<\/div><\/div>$/,"</div>"+condRow+"</div>"),"res",[S.conc?`Conc · ${S.conc.name}`:"No concentration",(n=>n?`${n} condition${n>1?"s":""}`:"no conditions")(Object.keys(S.conds||{}).filter(k=>S.conds[k]).length+(S.cover?1:0))].join(" · "))+colWrap(resCard,"res",`Slots ${SL().map(l=>slotsLeft(l)).join("·")}`)+`</div>`+`
+  document.getElementById("pane-combat").innerHTML=`<div class="span2 inittop">${S.round?`<span></span><button class="initbox ${S.initNat===20?"n20":S.initNat===1?"n1":""}" id="tInit" title="${S.initNat===20?"Natural 20 · ":S.initNat===1?"Natural 1 · ":""}Tap to change"><span class="label">Initiative</span><b class="num">${S.init??"–"}</b></button><button class="btn bad endsq" id="tEnd">End<br>combat</button>`:`<button class="btn pri initsq" id="tRollInit"><span>Roll initiative</span><b class="num">${sgn(DEX)}</b></button>`}</div>`+focusBar+(incNow?renderTurn():colWrap(renderTurn(),"turn",`My turn${S.round?` · Round ${S.round} · ${S.phase==="mine"?"my turn":"enemies' turn"}`:""}`))+colWrap(hpCard,"hp",`HP ${S.hp}/${C.maxHp}${S.temp?` +${S.temp} temp`:""} · AC ${ac()} · saves`)+amfBar+`<div class="span2 csgrid">`+colWrap(concStrip.replace(/<\/div><\/div>$/,"</div>"+condRow+"</div>"),"res",[S.conc?`Conc · ${S.conc.name}`:"No concentration",(n=>n?`${n} condition${n>1?"s":""}`:"no conditions")(Object.keys(S.conds||{}).filter(k=>S.conds[k]).length+(S.cover?1:0))].join(" · "))+colWrap(resCard,"res",`Slots ${SL().map(l=>slotsLeft(l)).join("·")}`)+`</div>`+`
 
 
 
